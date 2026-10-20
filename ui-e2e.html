@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en" data-default-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>UI e2e on Juice Shop</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: a shop counter. A locator ladder you climb per element, a login made of three storage slots, the
+   purchase journey as a receipt, one Page Object on two screens, a retry desk, the defect shelf, planted bugs. */
+:root {
+  --bg: #edf0f2; --surface: #ffffff; --sunken: #e1e6ea; --ink: #14181c; --muted: #58626b; --line: #cdd5db;
+  --accent: #c2410c; --accent-soft: #fde5d6; --api: #0f6b73; --api-soft: #d5eeee;
+  --ok: #17784b; --ok-soft: #d8f1e3; --bad: #b42318; --bad-soft: #fbe1dd; --warn: #8a6100; --warn-soft: #f7ebc8;
+  --font-display: 'Bricolage Grotesque', 'Public Sans', system-ui, sans-serif;
+  --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101315; --surface: #181c1f; --sunken: #20262a; --ink: #e8edf0; --muted: #9da7ae; --line: #2d353b;
+    --accent: #ff9a62; --accent-soft: #42220f; --api: #6fd3db; --api-soft: #0f3134;
+    --ok: #62d49a; --ok-soft: #12321f; --bad: #ff8a7d; --bad-soft: #3d1714; --warn: #f1c35a; --warn-soft: #3a2d0c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101315; --surface: #181c1f; --sunken: #20262a; --ink: #e8edf0; --muted: #9da7ae; --line: #2d353b;
+  --accent: #ff9a62; --accent-soft: #42220f; --api: #6fd3db; --api-soft: #0f3134;
+  --ok: #62d49a; --ok-soft: #12321f; --bad: #ff8a7d; --bad-soft: #3d1714; --warn: #f1c35a; --warn-soft: #3a2d0c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--font-body); margin: 0; }
+body[data-lang="ru"] [lang="en"], body[data-lang="en"] [lang="ru"] { display: none !important; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 52px); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(22px, 2.8vw, 30px); font-weight: 800; letter-spacing: -0.01em; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 70ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+a { color: var(--accent); }
+button { font-family: var(--font-body); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 20px; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { font: 500 13px var(--font-mono); background: transparent; color: var(--muted); border: 0; padding: 6px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.hero { display: grid; gap: 16px; padding-block: 8px; }
+.hero .lead { font-size: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--muted); }
+.facts b { font: 800 24px var(--font-display); color: var(--ink); margin-right: 6px; font-variant-numeric: tabular-nums; }
+section.station { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 52px 0; }
+.ladder, .shelf, .mut { grid-template-columns: minmax(0, 1fr); }
+.cmd { min-width: 0; }
+section.station > header { display: grid; gap: 8px; }
+.num { font: 700 13px var(--font-mono); color: var(--accent); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { font: 500 13.5px var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 780px) { .two { grid-template-columns: minmax(0, 1fr); } }
+pre.code { margin: 0; background: var(--sunken); border-radius: 8px; padding: 10px 12px; font: 400 12.5px/1.55 var(--font-mono); overflow-x: auto; white-space: pre; }
+.tag { font: 600 11px var(--font-mono); padding: 2px 7px; border-radius: 4px; display: inline-block; }
+.tag.ui { background: var(--accent-soft); color: var(--accent); } .tag.api { background: var(--api-soft); color: var(--api); }
+.tag.ok { background: var(--ok-soft); color: var(--ok); } .tag.bad { background: var(--bad-soft); color: var(--bad); } .tag.warn { background: var(--warn-soft); color: var(--warn); }
+
+/* ladder */
+.ladder { display: grid; gap: 6px; }
+.rung { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; }
+.rung b { font: 700 12px var(--font-mono); color: var(--muted); }
+.rung code { overflow-wrap: anywhere; }
+.rung.pick { border-color: var(--ok); background: var(--ok-soft); }
+.rung.no { opacity: .5; }
+.rung.no code { text-decoration: line-through; }
+
+/* storage */
+.slots { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 680px) { .slots { grid-template-columns: minmax(0, 1fr); } }
+.slot { border: 1px dashed var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; cursor: pointer; background: transparent; color: var(--ink); text-align: left; font: inherit; }
+.slot[aria-pressed="true"] { border-style: solid; border-color: var(--api); background: var(--api-soft); }
+.slot .k { font: 700 13px var(--font-mono); }
+.slot .v { font: 400 12px var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.state { border-radius: 12px; padding: 14px; display: grid; gap: 4px; font-size: 15px; }
+.state.ok { background: var(--ok-soft); } .state.bad { background: var(--bad-soft); } .state.warn { background: var(--warn-soft); }
+.state b { font-family: var(--font-display); font-size: 19px; }
+
+/* receipt */
+.receipt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 12px; }
+@media (max-width: 780px) { .receipt { grid-template-columns: minmax(0, 1fr); } }
+.steps { display: grid; gap: 4px; }
+.steps button { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; border: 1px solid transparent; background: transparent; color: var(--ink); border-radius: 10px; padding: 8px 10px; cursor: pointer; font-size: 14.5px; }
+.steps button[aria-current="step"] { background: var(--surface); border-color: var(--line); }
+.steps .n { font: 700 12px var(--font-mono); color: var(--muted); }
+.paper { background: var(--surface); border: 1px solid var(--line); border-radius: 4px 4px 14px 14px; padding: 18px; font: 400 13px/1.7 var(--font-mono); display: grid; gap: 10px; }
+.paper .line { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dotted var(--line); }
+.paper .line.total { font-weight: 700; border-bottom: 0; font-size: 14px; }
+.paper .check { font-family: var(--font-body); font-size: 14px; background: var(--sunken); border-radius: 8px; padding: 10px 12px; }
+
+/* devices */
+.devices { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 780px) { .devices { grid-template-columns: minmax(0, 1fr); } }
+.screen { border: 2px solid var(--ink); border-radius: 12px; overflow: hidden; background: var(--sunken); }
+.screen.phone { max-width: 250px; border-radius: 26px; margin-inline: auto; }
+.bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: #4b6470; color: #fff; font: 600 13px var(--font-body); }
+.bar span { padding: 3px 7px; border-radius: 6px; }
+.bar span.hit { outline: 2px solid #ffd27a; }
+.bar .sp { flex: 1; }
+.scr-body { position: relative; min-height: 190px; padding: 12px; display: grid; gap: 8px; }
+.ghost { height: 14px; border-radius: 4px; background: var(--line); }
+.drawer { position: absolute; inset: 0 30% 0 0; background: var(--surface); border-right: 1px solid var(--line); padding: 12px; font-size: 13px; display: grid; gap: 6px; align-content: start; }
+.drawer .hit, .menu .hit { outline: 2px solid var(--accent); border-radius: 4px; padding: 0 4px; }
+.menu { position: absolute; right: 12px; top: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 13px; display: grid; gap: 4px; box-shadow: 0 6px 20px rgb(0 0 0 / .15); }
+
+/* retry desk */
+.attempts { display: flex; gap: 6px; flex-wrap: wrap; }
+.attempts button { font: 700 13px var(--font-mono); min-width: 78px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); cursor: pointer; background: var(--surface); color: var(--ink); }
+.attempts button.p { background: var(--ok-soft); color: var(--ok); border-color: var(--ok); }
+.attempts button.f { background: var(--bad-soft); color: var(--bad); border-color: var(--bad); }
+.attempts button:disabled { opacity: .35; cursor: default; }
+
+/* defects */
+.shelf { display: grid; gap: 6px; }
+.def { display: grid; grid-template-columns: 96px 84px minmax(0, 1fr); gap: 12px; align-items: baseline; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+@media (max-width: 680px) { .def { grid-template-columns: minmax(0, 1fr); gap: 2px; } }
+.def b { font: 700 12.5px var(--font-mono); }
+.def small { display: block; color: var(--muted); font-size: 13px; }
+
+.mut { display: grid; gap: 6px; }
+.mrow { display: grid; grid-template-columns: 40px minmax(0, 1.2fr) minmax(0, 1.3fr) 110px; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+@media (max-width: 760px) { .mrow { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.mrow > b { font-family: var(--font-mono); }
+.mrow code { font-size: 12px; color: var(--muted); }
+.kill { font: 600 12px var(--font-mono); padding: 4px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); text-align: center; justify-self: start; }
+dl.terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+@media (max-width: 760px) { dl.terms { grid-template-columns: minmax(0, 1fr); } }
+dl.terms div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+dt { font: 700 13.5px var(--font-mono); } dd { margin: 4px 0 0; font-size: 14.5px; color: var(--muted); }
+.cmd { display: flex; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 8px 8px 14px; }
+.cmd code { flex: 1; overflow-x: auto; white-space: nowrap; }
+.cmd button { font: 600 12px var(--font-mono); border: 1px solid var(--line); background: var(--sunken); color: var(--ink); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+footer { padding-top: 48px; font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body data-lang="ru">
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">ui-e2e-testing · OWASP Juice Shop v20.3.0</span>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" id="lang-ru" data-l="ru" aria-pressed="true">RU</button>
+      <button type="button" id="lang-en" data-l="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 lang="ru">UI end-to-end: магазин глазами покупателя</h1>
+    <h1 lang="en">UI end-to-end: the shop through a customer's eyes</h1>
+    <p class="lead" lang="ru">Тесты Playwright проходят OWASP Juice Shop так же, как человек: ищут товар, кладут в корзину, оформляют заказ, находят его в истории. Всё, что не проверяется, готовится через API; все суммы сверяются с ценами самого магазина; каждый тест идёт на пяти браузерах и устройствах.</p>
+    <p class="lead" lang="en">Playwright tests walk through OWASP Juice Shop as a person would: find a product, fill the basket, check out, find the order in the history. Whatever is not under test is prepared over the API; every total is checked against the shop's own prices; every test runs on five browsers and devices.</p>
+    <div class="facts">
+      <span><b>35</b><span lang="ru">тестов на браузер</span><span lang="en">tests per browser</span></span>
+      <span><b>5</b><span lang="ru">проектов: 3 движка + 2 телефона</span><span lang="en">projects: 3 engines + 2 phones</span></span>
+      <span><b>8</b><span lang="ru">найденных дефектов UI</span><span lang="en">UI defects found</span></span>
+      <span><b id="fact-mut">6/6</b><span lang="ru">посаженных багов пойманы</span><span lang="en">planted bugs caught</span></span>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-ladder">
+    <header>
+      <span class="num">01</span>
+      <h2 id="h-ladder" lang="ru">Лестница локаторов</h2><h2 id="h-ladder-en" lang="en">The locator ladder</h2>
+      <p class="muted" lang="ru">Page Object ищет элемент так, как его находит пользователь и скринридер: по роли и доступному имени. Ниже по лестнице спускаемся, только если приложение не даёт имени, и тогда это дефект доступности с номером. Выберите элемент.</p>
+      <p class="muted" lang="en">A Page Object finds an element the way a user and a screen reader do: by role and accessible name. We go down the ladder only when the app gives no name, and then it is an accessibility defect with an id. Pick an element.</p>
+    </header>
+    <div class="chips" id="el-chips" role="group" aria-label="Element"></div>
+    <div class="two">
+      <div class="ladder" id="ladder"></div>
+      <div class="panel" id="ladder-why"></div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-login">
+    <header>
+      <span class="num">02</span>
+      <h2 id="h-login" lang="ru">Вход без формы: три ячейки</h2><h2 lang="en">Login without the form: three slots</h2>
+      <p class="muted" lang="ru">Фикстура логинится через API и кладёт сессию прямо в браузер. Juice Shop держит её в трёх местах. Включайте ячейки и смотрите, что увидит тест. Обычный <code>storageState</code> несёт только первые две.</p>
+      <p class="muted" lang="en">The fixture logs in over the API and puts the session straight into the browser. Juice Shop keeps it in three places. Switch the slots and see what the test would get. A plain <code>storageState</code> carries only the first two.</p>
+    </header>
+    <div class="slots" id="slots"></div>
+    <div class="state" id="login-state" aria-live="polite"></div>
+    <pre class="code">await context.addCookies([{ name: 'token', value: a.token, url }]);
+await context.addInitScript(([token, bid]) =&gt; {
+  localStorage.setItem('token', token);
+  sessionStorage.setItem('bid', String(bid));   // not part of storageState
+}, [a.token, a.bid]);</pre>
+  </section>
+
+  <section class="station" aria-labelledby="h-journey">
+    <header>
+      <span class="num">03</span>
+      <h2 id="h-journey" lang="ru">Путь покупателя как чек</h2><h2 lang="en">The purchase journey as a receipt</h2>
+      <p class="muted" lang="ru">Смоук-тест проходит весь путь через UI. Ожидаемые суммы он не знает заранее: берёт цены из API и считает сам. Пройдите шаги.</p>
+      <p class="muted" lang="en">The smoke test walks the whole journey through the UI. It does not know the totals in advance: it takes prices from the API and does the sum itself. Step through it.</p>
+    </header>
+    <div class="receipt">
+      <div class="steps" id="steps" role="list"></div>
+      <div class="paper" id="paper" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-dev">
+    <header>
+      <span class="num">04</span>
+      <h2 id="h-dev" lang="ru">Один Page Object, два экрана</h2><h2 lang="en">One Page Object, two screens</h2>
+      <p class="muted" lang="ru">Тест вызывает <code>nav.logout()</code> и не знает, на чём он запущен. На компьютере кнопка «Account» в верхней панели, на телефоне её нет: выход живёт в боковом меню.</p>
+      <p class="muted" lang="en">The test calls <code>nav.logout()</code> and doesn't know what it runs on. On a desktop "Account" is in the top bar; on a phone it isn't: logout lives in the side navigation.</p>
+    </header>
+    <div class="chips" id="dev-chips" role="group" aria-label="Device"></div>
+    <div class="devices">
+      <div id="screen"></div>
+      <div class="panel" id="dev-log"></div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-retry">
+    <header>
+      <span class="num">05</span>
+      <h2 id="h-retry" lang="ru">Стол повторов: flaky не прячется</h2><h2 lang="en">The retry desk: flaky doesn't hide</h2>
+      <p class="muted" lang="ru">В CI тест получает до двух повторов, локально — ни одного. Нажимайте на попытки, чтобы сделать их зелёными или красными, и смотрите, как Playwright это назовёт.</p>
+      <p class="muted" lang="en">In CI a test gets up to two retries, locally none. Click the attempts to make them pass or fail and see what Playwright calls the result.</p>
+    </header>
+    <div class="chips" id="env-chips" role="group" aria-label="Where"></div>
+    <div class="attempts" id="attempts"></div>
+    <div class="state" id="retry-state" aria-live="polite"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-def">
+    <header>
+      <span class="num">06</span>
+      <h2 id="h-def" lang="ru">Полка дефектов</h2><h2 lang="en">The defect shelf</h2>
+      <p class="muted" lang="ru">Каждый тест утверждает правильное поведение и помечен <code>test.fail()</code>. Пока дефект есть, прогон зелёный; когда его починят, тест покраснеет с «Expected to fail, but passed», и метку надо снять.</p>
+      <p class="muted" lang="en">Each test asserts the correct behaviour and is marked <code>test.fail()</code>. While the defect is there the run is green; when it is fixed the test turns red with "Expected to fail, but passed" and the marker comes off.</p>
+    </header>
+    <div class="chips" id="sev-chips" role="group" aria-label="Severity"></div>
+    <div class="shelf" id="shelf"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-mut">
+    <header>
+      <span class="num">07</span>
+      <h2 id="h-mut" lang="ru">Ловят ли тесты баги</h2><h2 lang="en">Do the tests catch bugs</h2>
+      <p class="muted" lang="ru">По одному багу в собранный фронтенд магазина (<code>main.js</code>), полный прогон на Chromium. M5 — наоборот, починка известного дефекта: тест с <code>test.fail()</code> должен это заметить.</p>
+      <p class="muted" lang="en">One bug at a time in the shop's built frontend (<code>main.js</code>), a full Chromium run. M5 goes the other way, fixing a known defect: the <code>test.fail()</code> test must notice.</p>
+    </header>
+    <div class="mut" id="mut"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-terms">
+    <header><span class="num">08</span><h2 id="h-terms" lang="ru">Словарь и команды</h2><h2 lang="en">Terms and commands</h2></header>
+    <dl class="terms" id="terms"></dl>
+    <div class="ladder" id="cmds"></div>
+  </section>
+
+  <footer>
+    <span lang="ru">Код и подробности: <a href="https://github.com/NailKarimov/ui-e2e-testing">github.com/NailKarimov/ui-e2e-testing</a> · текстовая версия <code>docs/ui-e2e.md</code>.</span>
+    <span lang="en">Code and details: <a href="https://github.com/NailKarimov/ui-e2e-testing">github.com/NailKarimov/ui-e2e-testing</a> · text version <code>docs/ui-e2e.md</code>.</span>
+  </footer>
+</div>
+
+<script>
+const S = { lang: 'ru', el: 0, slots: [true, true, true], step: 0, dev: 'desktop', env: 'ci', att: ['f', 'p', null], sev: 'all' };
+const L = (ru, en) => (S.lang === 'ru' ? ru : en);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = (id) => document.getElementById(id);
+function chips(id, items, cur, key) {
+  $(id).innerHTML = items.map(([v, ru, en]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${L(ru, en)}</button>`).join('');
+  $(id).onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S[key] = isNaN(+b.dataset.v) ? b.dataset.v : +b.dataset.v; renderAll(); };
+}
+
+/* 01 ladder: [role+name, label, text, test id / id, css] — index of the rung used, and what fails above it */
+const RUNGS = [
+  ['getByRole', ['роль + имя', 'role + name']],
+  ['getByLabel', ['подпись поля', 'field label']],
+  ['getByText', ['видимый текст', 'visible text']],
+  ['id / data-testid', ['id в разметке', 'an id in the markup']],
+  ['CSS', ['структура и классы', 'structure and classes']],
+];
+const ELS = [
+  { name: ['Кнопка «Checkout»', 'Checkout button'], pick: 0, code: ["getByRole('button', { name: 'Checkout' })"],
+    why: ['У кнопки есть роль и имя — первая ступень. Такой локатор переживёт любую смену классов Material и заодно проверяет, что кнопку видит скринридер.', 'The button has a role and a name: the top rung. Such a locator survives any change of Material classes and also proves a screen reader sees the button.'] },
+  { name: ['Карточка «Apple Juice»', 'Apple Juice card'], pick: 2, code: ["", "", "locator('app-product').filter({ has: page.locator('.name').getByText(name, { exact: true }) })"],
+    why: ['Карточка товара — не кнопка и не поле, у неё нет роли. Берём по точному тексту имени: «Apple Juice (1000ml)» — подстрока «Pineapple Juice (1000ml)», и без exact фильтр поймал бы обе карточки.', 'A product card is neither a button nor a field, it has no role. We take it by the exact name: "Apple Juice (1000ml)" is a substring of "Pineapple Juice (1000ml)", and without exact the filter would catch both.'] },
+  { name: ['Кнопка «+» в корзине', 'Basket "+" button'], pick: 4, defect: 'UI-A11Y-1', code: ["getByRole('button', { name: 'Increase quantity' })", '', '', '', "row(name).locator('button:has(.fa-plus-square)')"],
+    why: ['Кнопка-иконка без имени: для скринридера это просто «кнопка». getByRole с именем ничего не находит, приходится брать по иконке. Это записано как дефект UI-A11Y-1, и отдельный тест с test.fail() ждёт, когда имя появится.', 'An icon button without a name: to a screen reader it is just "button". getByRole with a name finds nothing, so we take it by its icon. That is recorded as defect UI-A11Y-1, and a test.fail() test waits for the name to appear.'] },
+  { name: ['Поле поиска', 'Search field'], pick: 3, code: ["getByRole('textbox', { name: 'Search' })", "getByLabel('Search')", '', "locator('#searchQuery input')"],
+    why: ['У поля нет ни имени, ни подписи, зато есть стабильный id контейнера. Это третья ступень снизу: лучше CSS, хуже роли.', 'The field has no name and no label, but a stable container id. Third rung from the bottom: better than CSS, worse than a role.'] },
+  { name: ['Радио «Fast Delivery»', 'Fast Delivery radio'], pick: 4, defect: 'UI-A11Y-2', code: ["getByRole('radio', { name: /Fast Delivery/ })", '', '', '', "rows().filter({ hasText: 'Fast Delivery' }).locator('mat-radio-button')"],
+    why: ['Три радиокнопки в таблице, ни у одной нет имени: скринридер прочтёт «радиокнопка, не выбрана» трижды. Строку находим по тексту, радио — внутри неё. Дефект UI-A11Y-2.', 'Three radios in a table, none has a name: a screen reader says "radio button, not checked" three times. We find the row by its text and the radio inside it. Defect UI-A11Y-2.'] },
+];
+function renderLadder() {
+  chips('el-chips', ELS.map((e, i) => [i, ...e.name]), S.el, 'el');
+  const e = ELS[S.el];
+  $('ladder').innerHTML = RUNGS.map((r, i) => {
+    const cls = i === e.pick ? 'pick' : i < e.pick && e.code[i] ? 'no' : '';
+    const code = e.code[i] || (i === e.pick ? '' : '');
+    const mark = i === e.pick ? `<span class="tag ok">${L('берём', 'used')}</span>` : i < e.pick && e.code[i] ? `<span class="tag bad">${L('не находит', 'finds nothing')}</span>` : '';
+    return `<div class="rung ${cls}"><b>${i + 1}</b><div><div>${r[0]} <span class="muted">· ${L(...r[1])}</span></div>${code ? `<code>${esc(code)}</code>` : ''}</div>${mark}</div>`;
+  }).join('');
+  $('ladder-why').innerHTML = `<h3>${L(...e.name)}</h3><p>${L(...e.why)}</p>${e.defect ? `<p><span class="tag bad">${e.defect}</span></p>` : ''}`;
+}
+
+/* 02 slots */
+const SLOTS = [['cookie', 'token', 'eyJhbGciOiJSUzI1NiJ9…'], ['localStorage', 'token', 'eyJhbGciOiJSUzI1NiJ9…'], ['sessionStorage', 'bid', '14']];
+function renderSlots() {
+  $('slots').innerHTML = SLOTS.map((s, i) => `<button type="button" class="slot" data-i="${i}" aria-pressed="${S.slots[i]}"><span class="k">${s[0]} · ${s[1]}</span><span class="v">${S.slots[i] ? esc(s[2]) : L('пусто', 'empty')}</span></button>`).join('');
+  $('slots').onclick = (ev) => { const b = ev.target.closest('.slot'); if (!b) return; S.slots[+b.dataset.i] = !S.slots[+b.dataset.i]; renderAll(); };
+  const [c, l, s] = S.slots;
+  let cls, t, d;
+  if (!c && !l) { cls = 'bad'; t = L('Гость', 'Guest'); d = L('Сессии нет: магазин показывает кнопку входа, корзина гостевая.', 'No session: the shop shows the login button, the basket is a guest one.'); }
+  else if (!l) { cls = 'warn'; t = L('Наполовину вошёл', 'Half signed in'); d = L('Сервер примет cookie, но Angular смотрит в localStorage и рисует гостя: меню без e-mail, «Add to Basket» кладёт в гостевую корзину.', 'The server would accept the cookie, but Angular reads localStorage and draws a guest: no e-mail in the menu, "Add to Basket" goes to the guest basket.'); }
+  else if (!s) { cls = 'warn'; t = L('Вошёл, но корзины нет', 'Signed in, no basket'); d = L('Меню показывает e-mail, но без bid страница корзины не знает, какую корзину грузить: пусто, хотя в API товары есть. Ровно это даёт один storageState.', 'The menu shows the e-mail, but without bid the basket page doesn\'t know which basket to load: empty, though the API has items. Exactly what a storageState file alone gives you.'); }
+  else if (!c) { cls = 'warn'; t = L('Почти', 'Almost'); d = L('UI выглядит вошедшим, но часть запросов (например, профиль) опирается на cookie и вернёт гостя.', 'The UI looks signed in, but some requests (the profile page) rely on the cookie and come back as a guest.'); }
+  else { cls = 'ok'; t = L('Вошёл, корзина на месте', 'Signed in, basket in place'); d = L('Так работает фикстура: 0 кликов по форме входа, около 100 мс вместо 2–3 секунд, а форму входа проверяют свои тесты.', 'This is what the fixture does: no clicks on the login form, about 100 ms instead of 2–3 seconds; the login form has tests of its own.'); }
+  $('login-state').className = 'state ' + cls;
+  $('login-state').innerHTML = `<b>${t}</b><span>${d}</span>`;
+}
+
+/* 03 journey */
+const P = { apple: 1.99, banana: 1.99, fast: 0.5 };
+const STEPS = [
+  { t: ['Найти и положить', 'Find and add'], k: 'ui', lines: [['Apple Juice (1000ml) × 2', 3.98], ['Banana Juice (1000ml) × 1', 1.99]],
+    c: ['Поиск «juice», три клика «Add to Basket». Проверка: на кнопке корзины «3».', 'Search "juice", three clicks on "Add to Basket". Check: the basket button says "3".'] },
+  { t: ['Корзина', 'Basket'], k: 'ui', lines: [['Items', 5.97]],
+    c: ['Количества 2 и 1, итог «Total Price: 5.97¤». 5.97 тест посчитал сам: 2 × 1.99 + 1.99 по ценам из /api/Products.', 'Quantities 2 and 1, total "Total Price: 5.97¤". The test computed 5.97 itself: 2 × 1.99 + 1.99 from /api/Products prices.'] },
+  { t: ['Новый адрес', 'New address'], k: 'ui', lines: [['Riga, LV1050', null]],
+    c: ['Форма адреса через UI, затем выбор строки. Кнопка «дальше» включается только после выбора.', 'The address form through the UI, then picking the row. "Next" enables only after the choice.'] },
+  { t: ['Доставка', 'Delivery'], k: 'api', lines: [['Fast Delivery', 0.5]],
+    c: ['Цена доставки — тоже из API (/api/Deliverys), не из теста.', 'The delivery price comes from the API too (/api/Deliverys), not from the test.'] },
+  { t: ['Карта и сводка', 'Card and summary'], k: 'ui', lines: [['Items', 5.97], ['Delivery', 0.5], ['Total Price', 6.47]],
+    c: ['Тестовая карта 4111…1111. Три строки сводки сверяются с расчётом: товары, доставка и сумма.', 'Test card 4111…1111. Three summary lines checked against the calculation: items, delivery and the sum.'] },
+  { t: ['Оплата', 'Pay'], k: 'ui', lines: [['#fa61-239a156a4a9edc1d', null]],
+    c: ['«Thank you for your purchase!», id заказа из URL, счётчик корзины снова «0».', '"Thank you for your purchase!", the order id from the URL, the basket counter back to "0".'] },
+  { t: ['История', 'History'], k: 'api', lines: [['Total 6.47¤', null]],
+    c: ['Заказ с этим id в истории в UI и в /rest/order-history с той же суммой. Две независимые стороны согласны.', 'The order with that id in the UI history and in /rest/order-history with the same total. Two independent sides agree.'] },
+];
+function renderJourney() {
+  $('steps').innerHTML = STEPS.map((s, i) => `<button type="button" role="listitem" data-i="${i}" ${i === S.step ? 'aria-current="step"' : ''}><span class="n">${String(i + 1).padStart(2, '0')}</span><span>${L(...s.t)}</span><span class="tag ${s.k}">${s.k === 'ui' ? 'UI' : 'UI + API'}</span></button>`).join('');
+  $('steps').onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S.step = +b.dataset.i; renderAll(); };
+  const s = STEPS[S.step];
+  $('paper').innerHTML = `<div class="eyebrow">${L('шаг', 'step')} ${S.step + 1} / ${STEPS.length}</div>` +
+    s.lines.map((l, i) => `<div class="line ${l[0] === 'Total Price' ? 'total' : ''}"><span>${esc(l[0])}</span><span>${l[1] == null ? '' : l[1].toFixed(2) + '¤'}</span></div>`).join('') +
+    `<div class="check">${L(...s.c)}</div>`;
+}
+
+/* 04 devices */
+function renderDevices() {
+  chips('dev-chips', [['desktop', 'Компьютер · Chromium, Firefox, WebKit', 'Desktop · Chromium, Firefox, WebKit'], ['phone', 'Телефон · Pixel 7, iPhone 15', 'Phone · Pixel 7, iPhone 15']], S.dev, 'dev');
+  const d = S.dev === 'desktop';
+  const bar = d
+    ? `<div class="bar"><span>☰</span><span>Juice Shop</span><span class="sp"></span><span>🔍</span><span class="hit">Account</span><span>Basket 0</span></div>`
+    : `<div class="bar"><span class="hit">☰</span><span class="sp"></span><span>🔍</span><span>🛒 0</span></div>`;
+  const over = d
+    ? `<div class="menu"><span>qa-…@example.test</span><span>${L('Профиль', 'Profile')}</span><span class="hit">Logout</span></div>`
+    : `<div class="drawer"><b>Account</b><span>qa-…@example.test</span><span>Orders &amp; Payment</span><span class="hit">Logout</span><span class="muted">Contact · About Us</span></div>`;
+  $('screen').innerHTML = `<div class="screen ${d ? '' : 'phone'}">${bar}<div class="scr-body"><div class="ghost" style="width:60%"></div><div class="ghost"></div><div class="ghost" style="width:80%"></div><div class="ghost" style="width:40%"></div>${over}</div></div>`;
+  const log = d
+    ? [["accountButton.isVisible()", 'true'], ["accountButton.click()", L('открыто меню', 'menu opens')], ["menu.getByText('Logout').click()", '✓']]
+    : [["accountButton.isVisible()", 'false'], ["sidenavButton.click()", L('открыто боковое меню', 'side navigation opens')], ["sidenav.getByText('Logout').click()", '✓'], [L('закрыть: тап по фону', 'close: tap the backdrop'), L('Escape его не закрывает', 'Escape does not close it')]];
+  $('dev-log').innerHTML = `<h3>NavBar.openAccount()</h3>` + log.map((l) => `<div><code>${esc(l[0])}</code> <span class="muted">→ ${esc(l[1])}</span></div>`).join('') +
+    `<p class="muted">${L('Ещё одно отличие телефона: mat-select контрольного вопроса не проходит проверку «stable» на эмуляции, поэтому список открывается с клавиатуры (фокус + Space) — так он заодно проверен без мыши.', 'One more phone difference: the security-question mat-select never passes the "stable" check under emulation, so the list is opened from the keyboard (focus + Space), which also proves it works without a mouse.')}</p>`;
+}
+
+/* 05 retries */
+function renderRetry() {
+  chips('env-chips', [['ci', 'CI · retries: 2', 'CI · retries: 2'], ['local', 'Локально · retries: 0', 'Local · retries: 0']], S.env, 'env');
+  const max = S.env === 'ci' ? 3 : 1;
+  const att = S.att.slice(0, max);
+  // an attempt runs only if every attempt before it failed
+  let firstPass = att.indexOf('p');
+  const ran = att.map((a, i) => (firstPass === -1 || i <= firstPass) && (i === 0 || att[i - 1] === 'f'));
+  $('attempts').innerHTML = [0, 1, 2].map((i) => {
+    if (i >= max) return `<button type="button" disabled>${L('нет', 'none')}</button>`;
+    const a = ran[i] ? (att[i] || 'p') : null;
+    return `<button type="button" data-i="${i}" class="${a || ''}" ${ran[i] ? '' : 'disabled'}>#${i + 1} ${a === 'p' ? 'pass' : a === 'f' ? 'fail' : L('не нужна', 'not run')}</button>`;
+  }).join('');
+  $('attempts').onclick = (e) => { const b = e.target.closest('button[data-i]'); if (!b) return; const i = +b.dataset.i; S.att[i] = (S.att[i] || 'p') === 'p' ? 'f' : 'p'; renderAll(); };
+  const results = ran.map((r, i) => (r ? (att[i] || 'p') : null)).filter(Boolean);
+  const passedAt = results.indexOf('p');
+  let cls, t, d;
+  if (passedAt === 0) { cls = 'ok'; t = 'passed'; d = L('С первой попытки. Трейса нет: он пишется только на первом повторе.', 'First time. No trace: it is recorded only on the first retry.'); }
+  else if (passedAt > 0) { cls = 'warn'; t = 'flaky'; d = L(`Прошёл с попытки ${passedAt + 1}. В отчёте не «зелёный», а flaky; в сводке job’а — строка с ошибкой первой попытки, в Allure — трейс повтора.`, `Passed on attempt ${passedAt + 1}. Reported not as green but as flaky; the job summary lists it with the first attempt's error, and Allure has the retry's trace.`); }
+  else { cls = 'bad'; t = 'failed'; d = S.env === 'ci' ? L('Все попытки красные: это не нестабильность, а падение. Видео, скриншот и трейс — в Allure.', 'Every attempt red: not flakiness but a failure. Video, screenshot and trace are in Allure.') : L('Локально повторов нет: нестабильный тест падает сразу, и его чинят до пуша. Проверка перед пушем: --repeat-each=3.', 'No retries locally: a flaky test fails at once and is fixed before the push. Check before pushing: --repeat-each=3.'); }
+  $('retry-state').className = 'state ' + cls;
+  $('retry-state').innerHTML = `<b>${t}</b><span>${d}</span>`;
+}
+
+/* 06 defects */
+const DEFS = [
+  ['UI-SEC-1', 'critical', ['Поисковый запрос рендерится как HTML: DOM XSS через q', 'The search term is rendered as HTML: DOM XSS through q'], ['безобидная проба ставит window.__xssProbe', 'a harmless probe sets window.__xssProbe']],
+  ['UI-A11Y-1', 'major', ['Кнопки «+», «−», «удалить» в корзине без доступного имени (WCAG 4.1.2)', 'Basket "+", "−", "delete" buttons have no accessible name (WCAG 4.1.2)'], ['toHaveAccessibleName(/\\S/)', 'toHaveAccessibleName(/\\S/)']],
+  ['UI-A11Y-2', 'major', ['Радиокнопки адреса, доставки и карты без имени', 'Address, delivery and card radios have no name'], ['3 радио есть, по имени не находится ни одно', '3 radios exist, none is found by name']],
+  ['UI-AUTH-1', 'minor', ['История заказов открывается гостю вместо перехода ко входу', 'Order history opens for a guest instead of sending them to log in'], ['URL остаётся #/order-history', 'URL stays #/order-history']],
+  ['UI-TXT-4', 'minor', ['Счётчик пароля «13/20», а поле принимает 40', 'Password counter "13/20" while the field takes 40'], ['maxlength="40" против счётчика', 'maxlength="40" vs the counter']],
+  ['UI-TXT-1', 'minor', ['Адрес без региона: «Riga, , LV1050»', 'Address without a State: "Riga, , LV1050"'], ['в карточке адреса «, ,»', '", ," in the address card']],
+  ['UI-TXT-2', 'trivial', ['Срок доставки «1 Days»', 'Delivery time "1 Days"'], ['текст ячейки ETA', 'the ETA cell text']],
+  ['UI-TXT-3', 'trivial', ['В сводке «Card Holder"» с лишней кавычкой', 'Summary label "Card Holder"" with a stray quote'], ['текст карточки оплаты', 'the payment card text']],
+];
+const SEVC = { critical: 'bad', major: 'bad', minor: 'warn', trivial: 'ok' };
+function renderShelf() {
+  chips('sev-chips', [['all', 'Все', 'All'], ['critical', 'Critical', 'Critical'], ['major', 'Major', 'Major'], ['minor', 'Minor', 'Minor'], ['trivial', 'Trivial', 'Trivial']], S.sev, 'sev');
+  $('shelf').innerHTML = DEFS.filter((d) => S.sev === 'all' || d[1] === S.sev).map((d) => `<div class="def"><b>${d[0]}</b><span><span class="tag ${SEVC[d[1]]}">${d[1]}</span></span><div>${esc(L(...d[2]))}<small>${L('тест видит:', 'the test sees:')} ${esc(L(...d[3]))}</small></div></div>`).join('');
+}
+
+/* 07 mutants: filled from the real run */
+const MUT = [
+  ['M1', ['Итог корзины без учёта количества', 'Basket total ignores quantities'], 'i+n.price*n.BasketItem.quantity → i+n.price', 'basket ×2 · delivery ×3 · journey'],
+  ['M2', ['Доставка в сводке всегда бесплатная', 'Delivery always free in the summary'], 'this.deliveryPrice=t.price → =0', 'One Day · Fast · journey'],
+  ['M3', ['Checkout доступен при пустой корзине', 'Checkout enabled for an empty basket'], 'productCount<1 → productCount<0', 'empty basket → checkout disabled'],
+  ['M4', ['Регистрация принимает несовпадающие пароли', 'Registration accepts mismatched passwords'], 'notSame validator → if(!1)', 'passwords do not match'],
+  ['M5', ['Починка UI-SEC-1: запрос как текст', 'Fix of UI-SEC-1: the term as text'], 'bypassSecurityTrustHtml(t) → t; innerHTML → textContent', 'UI-SEC-1: expected to fail, but passed'],
+  ['M6', ['«−» уменьшает на 2', '"−" decreases by 2'], 'addToQuantity(t,-1) → (t,-2)', 'quantity test (after a fix: start from 2)'],
+];
+function renderMut() {
+  $('mut').innerHTML = MUT.map((m) => `<div class="mrow"><b>${m[0]}</b><span>${L(...m[1])}<br><code>${esc(m[2])}</code></span><span class="muted">${esc(m[3])}</span><span class="kill">${L('пойман', 'caught')}</span></div>`).join('');
+}
+
+const TERMS = [
+  ['Page Object', ['Класс на экран: знает, как найти элементы и выполнить действие, но не решает, что правильно.', 'A class per screen: knows how to find elements and act, but does not decide what is right.']],
+  ['web-first assertion', ['expect(locator).toHaveText(...) сам ждёт, пока UI придёт в нужное состояние. Поэтому нет sleep.', 'expect(locator).toHaveText(...) waits for the UI to reach the state. Hence no sleeps.']],
+  ['storageState', ['Снимок cookie и localStorage для входа без формы. sessionStorage в него не входит.', 'A snapshot of cookies and localStorage for logging in without the form. sessionStorage is not in it.']],
+  ['flaky', ['Тест, который упал и прошёл на повторе без изменений кода. Признак гонки в тесте или в приложении.', 'A test that failed, then passed on a retry with no code change. A sign of a race in the test or the app.']],
+  ['trace', ['Запись прогона: снимки DOM на каждом шаге, сеть, консоль. Открывается в trace viewer.', 'A recording of a run: DOM snapshots per step, network, console. Opens in the trace viewer.']],
+  ['test.fail()', ['«Этот тест должен падать». Зелёный, пока дефект есть; красный, когда его починили.', '"This test is expected to fail." Green while the defect exists; red once it is fixed.']],
+];
+function renderTerms() { $('terms').innerHTML = TERMS.map((t) => `<div><dt>${t[0]}</dt><dd>${L(...t[1])}</dd></div>`).join(''); }
+const CMDS = ['npm run shop:up', 'npm test', 'npm run test:smoke', 'npx playwright test --project=mobile-safari --headed', 'npx playwright test --repeat-each=3', 'SHOW_DEFECTS=1 npx playwright test tests/defects'];
+function renderCmds() { $('cmds').innerHTML = CMDS.map((c, i) => `<div class="cmd"><code id="cmd-${i}">${esc(c)}</code><button type="button" data-c="${i}">${L('Копировать', 'Copy')}</button></div>`).join(''); }
+$('cmds').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  const done = () => { b.textContent = L('Скопировано', 'Copied'); setTimeout(() => (b.textContent = L('Копировать', 'Copy')), 1500); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('cmd-' + b.dataset.c)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+  try { navigator.clipboard.writeText(CMDS[+b.dataset.c]).then(done, fallback); } catch (err) { fallback(); }
+});
+
+function renderAll() { renderLadder(); renderSlots(); renderJourney(); renderDevices(); renderRetry(); renderShelf(); renderMut(); renderTerms(); renderCmds(); }
+function setLang(l) {
+  S.lang = l; document.body.dataset.lang = l; document.documentElement.lang = l;
+  $('lang-ru').setAttribute('aria-pressed', l === 'ru');
+  $('lang-en').setAttribute('aria-pressed', l === 'en');
+  try { localStorage.setItem('ui-e2e-lang', l); } catch (e) {}
+  renderAll();
+}
+document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.l)));
+let start = document.documentElement.dataset.defaultLang || 'ru';
+try { start = localStorage.getItem('ui-e2e-lang') || start; } catch (e) {}
+setLang(start);
+</script>
+</body>
+</html>
