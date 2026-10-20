@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Fixed defects: remove the test.fail marker",
+    "messageRegex": ".*Expected to fail, but passed.*",
+    "matchedStatuses": ["failed", "broken"]
+  },
+  {
+    "name": "Flaky (passed on a retry)",
+    "matchedStatuses": ["failed", "broken"],
+    "flaky": true
+  },
+  {
+    "name": "Locator problems (element not found, timeout)",
+    "messageRegex": ".*(element\\(s\\) not found|waiting for locator|waiting for getBy|Timeout .* exceeded).*",
+    "matchedStatuses": ["failed", "broken"]
+  },
+  {
+    "name": "Infrastructure (shop down, browser missing)",
+    "messageRegex": ".*(ECONNREFUSED|ERR_CONNECTION_REFUSED|Executable doesn't exist|net::ERR).*",
+    "matchedStatuses": ["broken", "failed"]
+  },
+  {
+    "name": "Product defects (assertion failures)",
+    "matchedStatuses": ["failed"]
+  },
+  {
+    "name": "Test defects (errors in the tests)",
+    "matchedStatuses": ["broken"]
+  }
+]
