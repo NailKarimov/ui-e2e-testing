@@ -42,8 +42,8 @@ export default tseslint.config(
     },
   },
   {
-    // Pa11y CI config: a CommonJS module read by pa11y-ci
-    files: ['.pa11yci.js'],
+    // Pa11y CI and Lighthouse CI configs: CommonJS modules read by their CLIs
+    files: ['.pa11yci.js', 'lighthouserc.cjs'],
     languageOptions: { sourceType: 'commonjs', globals: { process: 'readonly', module: 'writable' } },
   },
   prettier,
