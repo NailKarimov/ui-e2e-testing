@@ -23,6 +23,8 @@ devices.
   checked by comparing pictures, reflow at 320 px, and a manual checklist.
 - **Visual regression**: `toHaveScreenshot` on 6 screens × 2 layouts, baselines made only in Playwright's Docker
   image in CI, new ones committed by the job, changes approved with one click.
+- **Performance budgets**: Lighthouse CI on 3 pages × desktop/mobile × 3 runs, Core Web Vitals targets as
+  warnings and measured ceilings as failures, byte budgets, and INP from a Lighthouse user flow.
 - **22 known defects**: 8 functional (pinned with `test.fail()`, including a DOM XSS) and 14 accessibility ones.
 
 ## Functional tests (35 per browser, 175 in CI)
@@ -49,6 +51,20 @@ devices.
 Details: [`docs/a11y.md`](docs/a11y.md) · [`docs/visual.md`](docs/visual.md) · visual guide:
 [`docs/a11y-visual.html`](https://nailkarimov.github.io/ui-e2e-testing/a11y-visual.html).
 
+## Performance (Lighthouse CI, every push)
+
+| Check           | Desktop today | Mobile today | Target / ceiling                       |
+| --------------- | ------------- | ------------ | -------------------------------------- |
+| LCP             | 1.2 s         | 5.5–6.6 s    | 2.5 s / 1.8 s desktop, 8 s mobile      |
+| TBT             | 14–23 ms      | 182–310 ms   | 200 ms / 150 ms desktop, 600 ms mobile |
+| CLS             | ≤ 0.073       | ≤ 0.065      | 0.1 / 0.12                             |
+| INP (user flow) | 123 ms        | –            | 200 ms / 300 ms                        |
+
+Reports of the latest run: [nailkarimov.github.io/ui-e2e-testing/lighthouse/](https://nailkarimov.github.io/ui-e2e-testing/lighthouse/) ·
+details: [`docs/lighthouse.md`](docs/lighthouse.md) · visual guide: [`docs/perf.html`](https://nailkarimov.github.io/ui-e2e-testing/perf.html).
+Four performance bugs planted (slow click handler, start-up task, late layout shift, bundle bloat): all caught;
+the last one only after the byte budget moved off `budget.json`, which Lighthouse 12 ignores.
+
 **Does the suite catch bugs?** 6 bugs planted one at a time in Juice Shop's built frontend (`scripts/mutants.mjs`): wrong basket total, free delivery in the summary, checkout with an empty basket, mismatched passwords accepted, "−" by two, and one _fix_ of a known defect that a `test.fail()` test must notice. All 6 caught; the "−" bug survived the first version of its test, which now steps through values the shop's floor of 1 can't hide. Four more for accessibility and visuals (invisible focus, a fixed label, a moved button, a greyed price): all caught, two of them only after the tests were improved (pictures instead of styles for focus, a pixel budget instead of a ratio for screenshots). Details: [`docs/ui-e2e.md`](docs/ui-e2e.md) · visual guide:
 [`docs/ui-e2e.html`](https://nailkarimov.github.io/ui-e2e-testing/ui-e2e.html).
 
@@ -62,6 +78,7 @@ npm test                             # everything except visual, all five projec
 npm run test:smoke                   # @smoke only
 npm run test:a11y                    # axe, keyboard, reflow
 npm run a11y:pa11y                   # Pa11y, then: node scripts/pa11y-summary.mjs
+npm run perf:lhci                    # Lighthouse CI desktop (perf:lhci:mobile, perf:flow for INP)
 npm run test:visual                  # screenshots (compare in the Playwright Docker image, docs/visual.md)
 npx playwright test --project=mobile-safari --headed
 npm run shop:down
@@ -91,7 +108,7 @@ scripts/mutants.mjs       planted bugs for the mutation check
 ## CI
 
 `.github/workflows/tests.yml`: Juice Shop as a service container, lint + format + typecheck, all three browser
-engines, the five projects, flaky summary, Pa11y summary, Allure report with history on GitHub Pages; nightly at
+engines, the five projects, flaky summary, Pa11y summary, Lighthouse CI and the INP flow, Allure report with history on GitHub Pages; nightly at
 03:00 UTC. A second job, `visual`, runs the screenshot tests inside `mcr.microsoft.com/playwright:v1.64.1-noble`
 and commits new baselines; "Run workflow" with "approve the current screens" updates them on purpose.
 

@@ -9,7 +9,7 @@ import { startFlow } from 'lighthouse';
 
 const base = process.env.SHOP_URL ?? 'http://127.0.0.1:3000';
 const TARGET = 200; // ms, Core Web Vitals "good"
-const CEILING = Number(process.env.INP_CEILING ?? 400); // ms, today's value plus a margin (docs/lighthouse.md)
+const CEILING = Number(process.env.INP_CEILING ?? 300); // ms: CI median 123 ms (107–129) on 21.10.2026, plus a margin
 
 const RUNS = Number(process.env.FLOW_RUNS ?? 3); // INP of one run jitters; the median of three is reported
 

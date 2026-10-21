@@ -7,10 +7,12 @@
 const base = process.env.SHOP_URL ?? 'http://127.0.0.1:3000';
 const mobile = process.env.LHCI_FORM_FACTOR === 'mobile';
 
-// [median today (CI), ceiling]; desktop and mobile measured separately (docs/lighthouse.md, "Baseline").
+// Ceilings from the CI baseline of 21.10.2026 (GitHub runner, median of 3) with a margin for runner noise:
+//   desktop: LCP 1.2 s, FCP 0.7 s, TBT 14–23 ms, CLS ≤ 0.073, score 96–97
+//   mobile:  LCP 5.5–6.6 s, FCP 3.5 s, TBT 182–310 ms, CLS ≤ 0.065, score 65–67
 const CEILING = mobile
-  ? { lcp: 9000, fcp: 6500, tbt: 900, cls: 0.12, si: 8500, score: 0.35 }
-  : { lcp: 2500, fcp: 1500, tbt: 600, cls: 0.12, si: 3000, score: 0.6 };
+  ? { lcp: 8000, fcp: 4500, tbt: 600, cls: 0.12, si: 8000, score: 0.55 }
+  : { lcp: 1800, fcp: 1100, tbt: 150, cls: 0.12, si: 2500, score: 0.85 };
 
 module.exports = {
   ci: {
