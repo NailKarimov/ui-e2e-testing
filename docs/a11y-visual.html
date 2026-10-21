@@ -159,7 +159,7 @@ footer { padding-top: 48px; font-size: 14px; color: var(--muted); }
     <p class="lead" lang="ru">Магазин должен работать для тех, кто не видит экран или не пользуется мышью, и не должен незаметно «поехать» после очередной правки стилей. Два движка проверяют разметку по WCAG 2.2 AA, тесты проходят заказ только с клавиатуры, а скриншоты сравниваются с утверждённым эталоном пиксель в пиксель.</p>
     <p class="lead" lang="en">The shop has to work for people who can't see the screen or don't use a mouse, and it must not quietly shift after the next style change. Two engines check the markup against WCAG 2.2 AA, tests check out using only the keyboard, and screenshots are compared pixel by pixel with an approved baseline.</p>
     <div class="facts">
-      <span><b>12</b><span lang="ru">экранов под axe</span><span lang="en">screens under axe</span></span>
+      <span><b>11</b><span lang="ru">экранов под axe</span><span lang="en">screens under axe</span></span>
       <span><b>2</b><span lang="ru">движка: axe + Pa11y</span><span lang="en">engines: axe + Pa11y</span></span>
       <span><b>14</b><span lang="ru">дефектов доступности</span><span lang="en">accessibility defects</span></span>
       <span><b>12</b><span lang="ru">эталонных скриншотов</span><span lang="en">baseline screenshots</span></span>
@@ -388,7 +388,7 @@ function renderFlow() {
 /* 07 mutants */
 const MUT = [
   ['M7', ['Фокус невидим: outline: none и скрытый слой Material', 'Focus invisible: outline: none and Material\'s layer hidden'], ['клавиатура: видимый фокус — после исправления теста', 'keyboard: focus visible, after the test was fixed']],
-  ['M8', ['Починка UI-A11Y-3: aria-label="Search"', 'Fix of UI-A11Y-3: aria-label="Search"'], ['храповик axe на всех 12 экранах', 'the axe ratchet on all 12 screens']],
+  ['M8', ['Починка UI-A11Y-3: aria-label="Search"', 'Fix of UI-A11Y-3: aria-label="Search"'], ['храповик axe на всех 11 экранах', 'the axe ratchet on all 11 screens']],
   ['M9', ['Кнопка Checkout ниже на 4 px, без скруглений', 'Checkout button 4 px lower, square corners'], ['скриншот: корзина', 'screenshot: basket']],
   ['M10', ['Цены светло-серым', 'Prices in light grey'], ['axe: новый контраст; скриншот — после замены доли на бюджет', 'axe: new contrast; screenshot after the ratio became a budget']],
 ];

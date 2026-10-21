@@ -18,7 +18,7 @@ devices.
 - **Failure evidence**: trace on the first retry, video and screenshot of failed tests, all in Allure.
 - **Flaky tests are visible**: retries only in CI, and `scripts/flaky-summary.mjs` lists every test that passed only
   on a retry, with its first error, in the job summary.
-- **Accessibility, WCAG 2.2 AA**: axe-core on 12 screens with a ratchet (new problems fail, fixed ones must be
+- **Accessibility, WCAG 2.2 AA**: axe-core on 11 screens with a ratchet (new problems fail, fixed ones must be
   removed), Pa11y as a second engine with every difference reviewed, keyboard-only checkout, focus visibility
   checked by comparing pictures, reflow at 320 px, and a manual checklist.
 - **Visual regression**: `toHaveScreenshot` on 6 screens × 2 layouts, baselines made only in Playwright's Docker
@@ -40,7 +40,7 @@ devices.
 
 | Spec                | What it proves                                                                                                                                                                                                                     |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `a11y/axe` (12)     | product list, search, login, registration, About Us, contact, basket, address, delivery, summary, order history: no new serious or critical WCAG 2.2 AA violation, and every known one still there (or the test asks to remove it) |
+| `a11y/axe` (11)     | product list, search, login, registration, About Us, contact, basket, address, delivery, summary, order history: no new serious or critical WCAG 2.2 AA violation, and every known one still there (or the test asks to remove it) |
 | `a11y/keyboard` (5) | log in, change a quantity and check out to the confirmation with the keyboard only; focus visible on every top-bar stop (pictures, not CSS); Escape returns focus                                                                  |
 | `a11y/reflow` (5)   | at 320 px nothing sticks out sideways (WCAG 1.4.10); the product list does: UI-A11Y-14                                                                                                                                             |
 | Pa11y (6 pages)     | HTML_CodeSniffer as a second opinion: each error sorted into known, reviewed false positive or NEW (`scripts/pa11y-summary.mjs`)                                                                                                   |
