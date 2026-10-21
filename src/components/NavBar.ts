@@ -17,7 +17,7 @@ export class NavBar {
 
   async search(query: string) {
     await this.page.getByRole('button', { name: 'Open search' }).click();
-    // The search field has no accessible name, so it is found by its id.
+    // The search field has no accessible name (defect UI-A11Y-3), so it is found by its id.
     const box = this.page.locator('#searchQuery input');
     await box.fill(query);
     await box.press('Enter');

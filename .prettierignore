@@ -6,3 +6,4 @@ allure-results
 allure-report
 playwright/.auth
 docs/*.html
+pa11y-report

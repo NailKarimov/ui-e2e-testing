@@ -22,3 +22,23 @@ Juice Shop is deliberately insecure, so UI-SEC-1 is "by design" there; in a real
 
 The a11y defects also shaped the Page Objects: where an element has no accessible name, the locator falls back to
 an icon or an id, with a comment pointing here. When the defect is fixed, the locator can move to `getByRole`.
+
+## Accessibility defects found by axe, Pa11y and the reflow test
+
+These are pinned by the axe ratchet (`src/a11y/axe.ts`, see [`a11y.md`](a11y.md)) rather than by `test.fail()`:
+a scan fails when one of them disappears (fixed) or a new one appears. UI-A11Y-14 is a `test.fail()` test.
+
+| Id         | WCAG         | Where                          | What happens                                                                            | Found by    |
+| ---------- | ------------ | ------------------------------ | --------------------------------------------------------------------------------------- | ----------- |
+| UI-A11Y-3  | 1.3.1, 4.1.2 | every page                     | the search field has no label or name                                                   | axe + Pa11y |
+| UI-A11Y-4  | 1.4.3        | basket, order summary          | the e-mail in "Your Basket (…)" is #191919 on #3e3e3e: contrast 1.6:1                   | axe         |
+| UI-A11Y-5  | 1.4.3        | product list, search           | the "Only N left" ribbon: white on green with a shadow, 2.9:1                           | axe         |
+| UI-A11Y-6  | 1.3.1        | basket, address, summary       | tables with a header row that has no header cells                                       | axe         |
+| UI-A11Y-7  | 1.4.3        | any page, first visit          | the "Language has been changed" notice and its "Force page reload" button fail contrast | axe         |
+| UI-A11Y-8  | 1.1.1        | About Us                       | carousel photos have no `alt`                                                           | axe + Pa11y |
+| UI-A11Y-9  | 1.4.1        | About Us (desktop)             | the Terms of Use link differs from the text by colour only, 1.3:1                       | axe         |
+| UI-A11Y-10 | 2.1.1        | About Us                       | the carousel scrolls but cannot be reached with the keyboard                            | axe         |
+| UI-A11Y-11 | 1.3.1, 4.1.2 | Contact                        | the rating slider has no label                                                          | axe + Pa11y |
+| UI-A11Y-12 | 4.1.2        | Contact (while loading)        | `aria-label` on the CAPTCHA `<code>` element, where it is not allowed                   | axe         |
+| UI-A11Y-13 | 1.4.11       | every page                     | the menu icon in the top bar has 2.9:1 against the bar, icons need 3:1                  | Pa11y       |
+| UI-A11Y-14 | 1.4.10       | product list, search at 320 px | product cards are cut off by 24 px and the content area scrolls sideways                | reflow test |

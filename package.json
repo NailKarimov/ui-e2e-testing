@@ -5,7 +5,7 @@
   "description": "UI end-to-end tests of OWASP Juice Shop: user journeys from registration to order history, Page Objects with role locators, API login with storageState, cross-browser and mobile, traces and videos in Allure, flaky-test tracking. TypeScript + Playwright Test, GitHub Actions.",
   "license": "MIT",
   "scripts": {
-    "test": "playwright test",
+    "test": "playwright test --grep-invert @visual",
     "test:smoke": "playwright test --grep @smoke",
     "test:chromium": "playwright test --project=chromium",
     "shop:up": "docker run -d --rm --name juice-shop -p 3000:3000 bkimminich/juice-shop:v20.3.0",
@@ -17,7 +17,11 @@
     "typecheck": "tsc --noEmit",
     "allure:generate": "node scripts/allure-prepare.mjs && allure generate allure-results -o allure-report --clean",
     "allure:open": "allure open allure-report",
-    "prepare": "husky"
+    "prepare": "husky",
+    "a11y:pa11y": "pa11y-ci --config .pa11yci.js",
+    "test:a11y": "playwright test tests/a11y",
+    "test:visual": "playwright test --grep @visual --project=chromium --project=mobile-chrome",
+    "test:visual:update": "playwright test --grep @visual --project=chromium --project=mobile-chrome --update-snapshots"
   },
   "lint-staged": {
     "*.{ts,mjs,js}": [
@@ -27,6 +31,7 @@
     "*.{json,md,yml,yaml}": "prettier --write"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
@@ -39,6 +44,7 @@
     "eslint-plugin-playwright": "^2.12.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "pa11y-ci": "^5.0.0",
     "prettier": "^3.9.10",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0",

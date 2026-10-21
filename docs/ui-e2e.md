@@ -125,7 +125,13 @@ against it. M5 is the other direction: it _fixes_ a known defect, and the matchi
 6 of 6 caught (M6 on the second try). The lesson of M6: a test that only touches a boundary can be satisfied by
 the boundary itself; step through values that the boundary does not clamp.
 
-## 9. Running it
+## 9. Accessibility and visual regression
+
+Two more layers on the same Page Objects and fixtures, documented separately:
+[`a11y.md`](a11y.md) (axe ratchet, Pa11y, keyboard, reflow, manual checklist) and [`visual.md`](visual.md)
+(screenshots, baselines from the Playwright image, tolerances).
+
+## 10. Running it
 
 ```bash
 npm ci

@@ -3,10 +3,16 @@ name: Tests
 on:
   push:
     branches: [main]
+    paths-ignore: ['tests/__screenshots__/**'] # a baseline commit made by the visual job itself
   pull_request:
   schedule:
     - cron: '0 3 * * *' # nightly, 03:00 UTC
   workflow_dispatch:
+    inputs:
+      update_snapshots:
+        description: 'Approve the current screens as the new visual baselines'
+        type: boolean
+        default: false
 
 permissions:
   contents: write # publish the Allure report to the gh-pages branch
@@ -69,6 +75,14 @@ jobs:
         if: always()
         run: node scripts/flaky-summary.mjs >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Pa11y, a second accessibility engine
+        id: pa11y
+        if: always()
+        continue-on-error: true
+        run: |
+          npm run a11y:pa11y > /dev/null || true   # the summary below decides: known, false positive or NEW
+          node scripts/pa11y-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
       - name: Restore Allure history
         if: always()
         run: |
@@ -105,8 +119,66 @@ jobs:
           path: |
             playwright-report
             test-results
+            pa11y-report
           retention-days: 14
 
-      - name: Fail the job if tests failed
-        if: steps.tests.outcome == 'failure'
+      - name: Fail the job if tests failed or Pa11y found something new
+        if: steps.tests.outcome == 'failure' || steps.pa11y.outcome == 'failure'
         run: exit 1
+
+  # Visual regression runs inside Playwright's own Docker image, so fonts and rendering are the same on every run
+  # and for whoever updates the baselines. Missing baselines are created here and committed back; a changed screen
+  # fails until someone approves it with "Run workflow" → update snapshots (docs/visual.md).
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
+    services:
+      juice-shop:
+        image: bkimminich/juice-shop:v20.3.0
+    env:
+      SHOP_URL: http://juice-shop:3000
+      PUPPETEER_SKIP_DOWNLOAD: '1' # Pa11y's browser is not needed here
+      HOME: /root # Firefox and Chromium in the image expect it
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for Juice Shop
+        run: |
+          for i in $(seq 1 60); do
+            curl -sf http://juice-shop:3000/rest/admin/application-version && exit 0
+            sleep 2
+          done
+          echo "Juice Shop did not start" && exit 1
+
+      - name: Visual tests
+        run: |
+          if [ "${{ github.event_name == 'workflow_dispatch' && inputs.update_snapshots }}" = "true" ]; then
+            npx playwright test --grep @visual --project=chromium --project=mobile-chrome --update-snapshots=all
+          else
+            npx playwright test --grep @visual --project=chromium --project=mobile-chrome --update-snapshots=missing
+          fi
+
+      - name: Commit new or approved baselines
+        if: github.ref == 'refs/heads/main'
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git add tests/__screenshots__
+          if git diff --cached --quiet; then echo "Baselines unchanged."; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Visual baselines from CI (Playwright v1.64.1-noble)"
+          git push
+
+      - name: Upload visual diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs
+          path: |
+            test-results
+            playwright-report
+          retention-days: 14

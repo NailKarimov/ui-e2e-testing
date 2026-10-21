@@ -1,0 +1,11 @@
+/* Applied only while Playwright takes a screenshot (toHaveScreenshot stylePath). It hides what changes from run
+   to run and is not the design under test: notices that pop up by timing, blinking carets, scroll bars. */
+.mat-mdc-snack-bar-container,
+simple-snack-bar,
+app-challenge-solved-notification {
+  visibility: hidden !important;
+}
+* {
+  caret-color: transparent !important;
+  scrollbar-width: none !important;
+}

@@ -10,3 +10,4 @@ allure-report/
 Thumbs.db
 .claude/
 playwright/.auth/
+pa11y-report/

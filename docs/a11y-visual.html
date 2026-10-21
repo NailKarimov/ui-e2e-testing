@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en" data-default-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Juice Shop a11y and visual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: an inspection bench. A ratchet board of screens × defects you can break or fix, two engines side by side,
+   a focus test seen as two pictures, a 320 px viewport, a tolerance calculator, the baseline flow, planted bugs. */
+:root {
+  --bg: #eef0f4; --surface: #ffffff; --sunken: #e2e6ee; --ink: #141720; --muted: #5a6070; --line: #cfd4df;
+  --accent: #3b4fd8; --accent-soft: #e2e6fd; --px: #0f6b73; --px-soft: #d5eeee;
+  --ok: #17784b; --ok-soft: #d8f1e3; --bad: #b42318; --bad-soft: #fbe1dd; --warn: #8a6100; --warn-soft: #f7ebc8;
+  --font-display: 'Bricolage Grotesque', 'Public Sans', system-ui, sans-serif;
+  --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101219; --surface: #181b24; --sunken: #20242f; --ink: #e8eaf1; --muted: #a0a6b5; --line: #2e3341;
+    --accent: #9aa8ff; --accent-soft: #1e2552; --px: #6fd3db; --px-soft: #0f3134;
+    --ok: #62d49a; --ok-soft: #12321f; --bad: #ff8a7d; --bad-soft: #3d1714; --warn: #f1c35a; --warn-soft: #3a2d0c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101219; --surface: #181b24; --sunken: #20242f; --ink: #e8eaf1; --muted: #a0a6b5; --line: #2e3341;
+  --accent: #9aa8ff; --accent-soft: #1e2552; --px: #6fd3db; --px-soft: #0f3134;
+  --ok: #62d49a; --ok-soft: #12321f; --bad: #ff8a7d; --bad-soft: #3d1714; --warn: #f1c35a; --warn-soft: #3a2d0c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--font-body); margin: 0; }
+body[data-lang="ru"] [lang="en"], body[data-lang="en"] [lang="ru"] { display: none !important; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 50px); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(22px, 2.8vw, 30px); font-weight: 800; letter-spacing: -0.01em; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 70ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+a { color: var(--accent); }
+button { font-family: var(--font-body); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 20px; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { font: 500 13px var(--font-mono); background: transparent; color: var(--muted); border: 0; padding: 6px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.hero { display: grid; gap: 16px; padding-block: 8px; }
+.hero .lead { font-size: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--muted); }
+.facts b { font: 800 24px var(--font-display); color: var(--ink); margin-right: 6px; font-variant-numeric: tabular-nums; }
+section.station { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 52px 0; }
+section.station > header { display: grid; gap: 8px; }
+.num { font: 700 13px var(--font-mono); color: var(--accent); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { font: 500 13.5px var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 780px) { .two { grid-template-columns: minmax(0, 1fr); } }
+pre.code { margin: 0; background: var(--sunken); border-radius: 8px; padding: 10px 12px; font: 400 12.5px/1.55 var(--font-mono); overflow-x: auto; white-space: pre; }
+.tag { font: 600 11px var(--font-mono); padding: 2px 7px; border-radius: 4px; display: inline-block; white-space: nowrap; }
+.tag.ok { background: var(--ok-soft); color: var(--ok); } .tag.bad { background: var(--bad-soft); color: var(--bad); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); } .tag.ac { background: var(--accent-soft); color: var(--accent); }
+.tag.px { background: var(--px-soft); color: var(--px); }
+.state { border-radius: 12px; padding: 14px; display: grid; gap: 4px; font-size: 15px; }
+.state.ok { background: var(--ok-soft); } .state.bad { background: var(--bad-soft); } .state.warn { background: var(--warn-soft); }
+.state b { font-family: var(--font-display); font-size: 19px; }
+
+/* ratchet board */
+.board-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+table.board { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 13.5px; }
+table.board th, table.board td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: center; }
+table.board th:first-child, table.board td:first-child { text-align: left; white-space: nowrap; }
+table.board thead th { font: 600 11.5px var(--font-mono); color: var(--muted); }
+.cell { width: 34px; height: 28px; border-radius: 6px; border: 1px dashed var(--line); background: transparent; cursor: pointer; font: 700 12px var(--font-mono); color: var(--muted); }
+.cell.on { border: 1px solid var(--accent); background: var(--accent-soft); color: var(--accent); }
+.cell.may { border-style: dotted; }
+.cell.gone { border: 1px solid var(--bad); background: var(--bad-soft); color: var(--bad); }
+.cell.spread { border: 1px solid var(--warn); background: var(--warn-soft); color: var(--warn); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); align-items: center; }
+
+/* engines */
+.eng { display: grid; gap: 6px; }
+.erow { display: grid; grid-template-columns: minmax(0, 1fr) 56px 56px minmax(0, 1fr); gap: 10px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 9px 14px; font-size: 14.5px; }
+.erow .y { text-align: center; font: 700 14px var(--font-mono); }
+.erow .y.no { color: var(--muted); opacity: .5; }
+.erow.head { background: transparent; border: 0; font: 600 11.5px var(--font-mono); color: var(--muted); padding-block: 0; }
+@media (max-width: 680px) { .erow { grid-template-columns: minmax(0, 1fr) 44px 44px; } .erow > :last-child { grid-column: 1 / -1; } }
+
+/* focus pictures */
+.pics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.pic { background: #4b6470; border-radius: 10px; padding: 18px; display: grid; place-items: center; gap: 8px; }
+.pic span.cap { font: 600 11.5px var(--font-mono); color: #e8eef2; }
+.fbtn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; color: #f2f5f7; font: 700 20px var(--font-body); position: relative; }
+.fbtn.focus::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: rgb(255 255 255 / .16); }
+.fbtn.focus::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid #ffd27a; }
+
+/* reflow */
+.phone { width: 100%; max-width: 360px; border: 2px solid var(--ink); border-radius: 18px; overflow: hidden; background: var(--sunken); position: relative; margin-inline: auto; }
+.phone .bar { background: #4b6470; color: #fff; font: 600 13px var(--font-body); padding: 10px 12px; }
+.phone .area { position: relative; height: 190px; overflow: hidden; }
+.pcard { position: absolute; top: 14px; left: 14px; height: 160px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; display: grid; place-items: center; font-size: 13px; }
+.cut { position: absolute; top: 0; bottom: 0; right: 0; width: 6.7%; background: repeating-linear-gradient(45deg, var(--bad-soft), var(--bad-soft) 6px, transparent 6px, transparent 12px); border-left: 2px solid var(--bad); }
+
+/* tolerance */
+.ctl { display: grid; gap: 12px; }
+.ctl label { display: grid; gap: 4px; font-size: 13.5px; color: var(--muted); }
+.ctl input[type="range"] { width: 100%; accent-color: var(--accent); }
+.meter { display: grid; gap: 6px; }
+.mbar { height: 14px; border-radius: 7px; background: var(--sunken); position: relative; overflow: hidden; }
+.mbar i { position: absolute; inset: 0 auto 0 0; border-radius: 7px; }
+.mrow { display: grid; grid-template-columns: 150px minmax(0, 1fr) 90px; gap: 10px; align-items: center; font-size: 13.5px; }
+.mrow b { font: 700 13px var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .mrow { grid-template-columns: minmax(0, 1fr) 80px; } .mrow .mbar { grid-column: 1 / -1; grid-row: 2; } }
+
+/* flow */
+.flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 780px) { .flow { grid-template-columns: minmax(0, 1fr); } }
+.flow .panel h3 { display: flex; gap: 8px; align-items: center; }
+
+.mut { display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); }
+.mut .r { display: grid; grid-template-columns: 44px minmax(0, 1.3fr) minmax(0, 1.2fr) 150px; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+@media (max-width: 760px) { .mut .r { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.mut .r > b { font-family: var(--font-mono); }
+.mut .r > .tag { justify-self: start; }
+dl.terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+@media (max-width: 760px) { dl.terms { grid-template-columns: minmax(0, 1fr); } }
+dl.terms div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+dt { font: 700 13.5px var(--font-mono); } dd { margin: 4px 0 0; font-size: 14.5px; color: var(--muted); }
+.cmds { display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); }
+.cmd { display: flex; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 8px 8px 14px; min-width: 0; }
+.cmd code { flex: 1; overflow-x: auto; white-space: nowrap; }
+.cmd button { font: 600 12px var(--font-mono); border: 1px solid var(--line); background: var(--sunken); color: var(--ink); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+footer { padding-top: 48px; font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body data-lang="ru">
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">ui-e2e-testing · WCAG 2.2 AA · toHaveScreenshot</span>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" id="lang-ru" data-l="ru" aria-pressed="true">RU</button>
+      <button type="button" id="lang-en" data-l="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 lang="ru">Доступность и визуальная регрессия на Juice Shop</h1>
+    <h1 lang="en">Accessibility and visual regression on Juice Shop</h1>
+    <p class="lead" lang="ru">Магазин должен работать для тех, кто не видит экран или не пользуется мышью, и не должен незаметно «поехать» после очередной правки стилей. Два движка проверяют разметку по WCAG 2.2 AA, тесты проходят заказ только с клавиатуры, а скриншоты сравниваются с утверждённым эталоном пиксель в пиксель.</p>
+    <p class="lead" lang="en">The shop has to work for people who can't see the screen or don't use a mouse, and it must not quietly shift after the next style change. Two engines check the markup against WCAG 2.2 AA, tests check out using only the keyboard, and screenshots are compared pixel by pixel with an approved baseline.</p>
+    <div class="facts">
+      <span><b>12</b><span lang="ru">экранов под axe</span><span lang="en">screens under axe</span></span>
+      <span><b>2</b><span lang="ru">движка: axe + Pa11y</span><span lang="en">engines: axe + Pa11y</span></span>
+      <span><b>14</b><span lang="ru">дефектов доступности</span><span lang="en">accessibility defects</span></span>
+      <span><b>12</b><span lang="ru">эталонных скриншотов</span><span lang="en">baseline screenshots</span></span>
+      <span><b>4/4</b><span lang="ru">посаженных бага пойманы</span><span lang="en">planted bugs caught</span></span>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-r">
+    <header>
+      <span class="num">01</span>
+      <h2 id="h-r" lang="ru">Храповик: список может только сокращаться</h2><h2 lang="en">The ratchet: the list can only shrink</h2>
+      <p class="muted" lang="ru">Каждый экран ждёт свой набор известных дефектов. Нажимайте на ячейки: уберите дефект, будто его починили, или добавьте туда, где его не было, и посмотрите, что скажет тест. Пунктирные ячейки — «может быть»: зависят от данных или времени.</p>
+      <p class="muted" lang="en">Each screen expects its own set of known defects. Click the cells: remove a defect as if it were fixed, or add one where it wasn't, and see what the test says. Dotted cells are "may": they depend on data or timing.</p>
+    </header>
+    <div class="board-wrap"><table class="board" id="board"></table></div>
+    <div class="legend" id="legend"></div>
+    <div class="chips"><button type="button" id="new-v" aria-pressed="false"></button><button type="button" id="reset"></button></div>
+    <div class="state" id="ratchet-state" aria-live="polite"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-e">
+    <header>
+      <span class="num">02</span>
+      <h2 id="h-e" lang="ru">Два движка, одно решение по каждому расхождению</h2><h2 lang="en">Two engines, one decision per difference</h2>
+      <p class="muted" lang="ru">axe-core и HTML_CodeSniffer (внутри Pa11y) — независимые реализации WCAG. Где они согласны, находка надёжна; каждое расхождение разобрано вручную один раз и записано в правила <code>pa11y-summary.mjs</code>.</p>
+      <p class="muted" lang="en">axe-core and HTML_CodeSniffer (inside Pa11y) implement WCAG independently. Where they agree, a finding is solid; every difference was reviewed by hand once and written into the rules of <code>pa11y-summary.mjs</code>.</p>
+    </header>
+    <div class="chips" id="eng-chips" role="group" aria-label="Filter"></div>
+    <div class="eng" id="eng"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-f">
+    <header>
+      <span class="num">03</span>
+      <h2 id="h-f" lang="ru">Видимый фокус: сравниваем картинки, а не CSS</h2><h2 lang="en">Focus visible: compare pictures, not CSS</h2>
+      <p class="muted" lang="ru">Первая версия теста сравнивала вычисленные стили кнопки до и после фокуса. Посаженный баг M7 спрятал слой фокуса через <code>display: none</code>, но его <code>opacity</code> всё равно менялась — тест «видел» фокус, которого на экране не было. Включите баг.</p>
+      <p class="muted" lang="en">The first version compared the button's computed styles before and after focus. Planted bug M7 hid the focus layer with <code>display: none</code>, but its <code>opacity</code> still changed: the test "saw" a focus that wasn't on screen. Plant the bug.</p>
+    </header>
+    <div class="chips" id="m7-chips" role="group" aria-label="Bug"></div>
+    <div class="two">
+      <div class="pics" id="pics"></div>
+      <div class="panel" id="m7-verdict"></div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-w">
+    <header>
+      <span class="num">04</span>
+      <h2 id="h-w" lang="ru">320 пикселей: Reflow</h2><h2 lang="en">320 pixels: Reflow</h2>
+      <p class="muted" lang="ru">WCAG 1.4.10: при ширине 320 CSS px (экран 1280 px с увеличением 400 %) ничего не должно требовать прокрутки вбок. У Juice Shop прокручивается не страница, а область контента, поэтому <code>document.scrollWidth</code> честно показывает 320 — а карточка товара обрезана на 24 px.</p>
+      <p class="muted" lang="en">WCAG 1.4.10: at 320 CSS px (a 1280 px screen at 400 % zoom) nothing may need sideways scrolling. Juice Shop scrolls its content area, not the page, so <code>document.scrollWidth</code> honestly says 320 while the product card is cut by 24 px.</p>
+    </header>
+    <div class="two">
+      <div class="phone" aria-hidden="true"><div class="bar">☰ &nbsp; 🔍 &nbsp; 🛒 0</div><div class="area"><div class="pcard" style="right:-24px">Apple Juice (1000ml) · 1.99¤</div><div class="cut"></div></div></div>
+      <div class="panel">
+        <pre class="code">document.scrollWidth            → 320   ✓
+mat-sidenav-content.scrollWidth  → 344   ✗
+&lt;main class="container"&gt;         right edge 344 px
+&lt;div class="products-grid"&gt;      right edge 344 px</pre>
+        <p lang="ru">Тест проверяет область контента и перечисляет всё, что торчит наружу. Карусели и таблицы могут прокручиваться в своей рамке — WCAG это разрешает. Логин, регистрация, контакты и About Us проходят; список товаров — нет: <span class="tag bad">UI-A11Y-14</span>, закреплён через <code>test.fail()</code>.</p>
+        <p lang="en">The test checks the content area and lists everything sticking out. Carousels and tables may scroll in their own box, which WCAG allows. Login, registration, contact and About Us pass; the product list does not: <span class="tag bad">UI-A11Y-14</span>, pinned with <code>test.fail()</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-t">
+    <header>
+      <span class="num">05</span>
+      <h2 id="h-t" lang="ru">Допуск скриншота: доля против бюджета в пикселях</h2><h2 lang="en">Screenshot tolerance: a ratio versus a pixel budget</h2>
+      <p class="muted" lang="ru">Посаженный баг M10 сделал цену серой. Перекрашенная «1.99¤» меняет около 150 пикселей. Выберите снимок и посмотрите, пропустит ли его допуск.</p>
+      <p class="muted" lang="en">Planted bug M10 turned the price grey. A recoloured "1.99¤" changes about 150 pixels. Pick a shot and see whether the tolerance lets it through.</p>
+    </header>
+    <div class="two">
+      <div class="panel ctl">
+        <div class="chips" id="shot-chips" role="group" aria-label="Shot"></div>
+        <label for="ratio"><span lang="ru">maxDiffPixelRatio</span><span lang="en">maxDiffPixelRatio</span> <b id="ratio-v" class="mono"></b><input type="range" id="ratio" min="0" max="5" step="1" value="3"></label>
+      </div>
+      <div class="panel meter" id="meter" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h-b">
+    <header>
+      <span class="num">06</span>
+      <h2 id="h-b" lang="ru">Откуда берутся эталоны</h2><h2 lang="en">Where baselines come from</h2>
+      <p class="muted" lang="ru">Скриншот зависит от ОС, шрифтов и сглаживания. Эталон с ноутбука упадёт в CI и наоборот, поэтому эталоны делаются в одном месте — в job’е <code>visual</code> внутри образа <code>mcr.microsoft.com/playwright:v1.64.1-noble</code>.</p>
+      <p class="muted" lang="en">A screenshot depends on the OS, fonts and anti-aliasing. A laptop baseline fails in CI and the other way round, so baselines are made in one place: the <code>visual</code> job inside <code>mcr.microsoft.com/playwright:v1.64.1-noble</code>.</p>
+    </header>
+    <div class="flow" id="flow"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-m">
+    <header>
+      <span class="num">07</span>
+      <h2 id="h-m" lang="ru">Ловят ли тесты баги</h2><h2 lang="en">Do the tests catch bugs</h2>
+      <p class="muted" lang="ru">По одному багу в собранный фронтенд и стили магазина. Два из четырёх сначала проскочили и заставили улучшить сами тесты.</p>
+      <p class="muted" lang="en">One bug at a time in the shop's built frontend and styles. Two of the four slipped through at first and made the tests themselves better.</p>
+    </header>
+    <div class="mut" id="mut"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h-x">
+    <header><span class="num">08</span><h2 id="h-x" lang="ru">Словарь и команды</h2><h2 lang="en">Terms and commands</h2></header>
+    <dl class="terms" id="terms"></dl>
+    <div class="cmds" id="cmds"></div>
+  </section>
+
+  <footer>
+    <span lang="ru">Код: <a href="https://github.com/NailKarimov/ui-e2e-testing">github.com/NailKarimov/ui-e2e-testing</a> · текстом: <code>docs/a11y.md</code>, <code>docs/visual.md</code>.</span>
+    <span lang="en">Code: <a href="https://github.com/NailKarimov/ui-e2e-testing">github.com/NailKarimov/ui-e2e-testing</a> · as text: <code>docs/a11y.md</code>, <code>docs/visual.md</code>.</span>
+  </footer>
+</div>
+
+<script>
+const S = { lang: 'ru', grid: null, newV: false, eng: 'all', m7: false, shot: 0 };
+const L = (ru, en) => (S.lang === 'ru' ? ru : en);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = (id) => document.getElementById(id);
+function chips(id, items, cur, key) {
+  $(id).innerHTML = items.map(([v, ru, en]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${L(ru, en)}</button>`).join('');
+  $(id).onclick = (e) => { const b = e.target.closest('button'); if (!b) return; const v = b.dataset.v; S[key] = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v; renderAll(); };
+}
+
+/* 01 ratchet: screens × defects. 2 = expected, 1 = may, 0 = not expected */
+const DEF = ['1', '2', '3', '4', '5', '6', '8', '9', '10', '11'];
+const SCR = [
+  ['Product list', 'Список товаров', { 3: 2, 5: 1 }], ['Search', 'Поиск', { 3: 2, 5: 1 }], ['Login', 'Вход', { 3: 2 }],
+  ['Registration', 'Регистрация', { 3: 2 }], ['About Us', 'About Us', { 3: 2, 8: 2, 10: 2, 9: 1 }], ['Contact', 'Контакты', { 3: 2, 11: 2 }],
+  ['Basket', 'Корзина', { 1: 2, 3: 2, 4: 2, 6: 2 }], ['Address', 'Адрес', { 2: 2, 3: 2, 6: 2 }], ['Delivery', 'Доставка', { 2: 2, 3: 2 }],
+  ['Order summary', 'Сводка заказа', { 3: 2, 6: 2, 4: 1 }], ['Order history', 'История', { 3: 2 }],
+];
+const fresh = () => SCR.map((s) => DEF.map((d) => (s[2][d] === 2 ? true : false)));
+function renderRatchet() {
+  if (!S.grid) S.grid = fresh();
+  const head = `<thead><tr><th>${L('экран', 'screen')}</th>${DEF.map((d) => `<th>A11Y-${d}</th>`).join('')}</tr></thead>`;
+  let gone = [], spread = [];
+  const body = SCR.map((s, i) => `<tr><td>${L(s[1], s[0])}</td>${DEF.map((d, j) => {
+    const exp = s[2][d] || 0, on = S.grid[i][j];
+    let cls = on ? 'on' : '';
+    if (exp === 1) cls += ' may';
+    if (exp === 2 && !on) { cls = 'gone'; gone.push(`${L(s[1], s[0])}: UI-A11Y-${d}`); }
+    if (!exp && on) { cls = 'spread'; spread.push(`${L(s[1], s[0])}: UI-A11Y-${d}`); }
+    const label = on ? '●' : exp === 2 ? '○' : '';
+    return `<td><button type="button" class="cell ${cls}" data-i="${i}" data-j="${j}" aria-label="${esc(L(s[1], s[0]))} UI-A11Y-${d}: ${on ? L('найден', 'found') : L('нет', 'absent')}">${label}</button></td>`;
+  }).join('')}</tr>`).join('');
+  $('board').innerHTML = head + `<tbody>${body}</tbody>`;
+  $('board').onclick = (e) => { const b = e.target.closest('.cell'); if (!b) return; S.grid[+b.dataset.i][+b.dataset.j] = !S.grid[+b.dataset.i][+b.dataset.j]; renderAll(); };
+  $('legend').innerHTML = `<span><span class="tag ac">●</span> ${L('найден axe', 'found by axe')}</span><span><span class="tag bad">○</span> ${L('ожидался, но пропал', 'expected, now gone')}</span><span><span class="tag warn">●</span> ${L('появился там, где не ждали', 'appeared where not expected')}</span><span>${L('пунктир — «может быть»', 'dotted: "may"')}</span>`;
+  $('new-v').textContent = S.newV ? L('Убрать новое нарушение', 'Remove the new violation') : L('Добавить новое нарушение (не из списка)', 'Add a new violation (not on the list)');
+  $('new-v').setAttribute('aria-pressed', S.newV);
+  $('new-v').onclick = () => { S.newV = !S.newV; renderAll(); };
+  $('reset').textContent = L('Сбросить', 'Reset');
+  $('reset').onclick = () => { S.grid = fresh(); S.newV = false; renderAll(); };
+  const st = $('ratchet-state');
+  if (S.newV) { st.className = 'state bad'; st.innerHTML = `<b>${L('Красный: новое нарушение', 'Red: a new violation')}</b><span>${L('[serious] color-contrast на «Список товаров» не совпадает ни с одним известным дефектом. Что-то сломали — отчёт показывает элемент и правило.', '[serious] color-contrast on "Product list" matches no known defect. Something broke; the report names the element and the rule.')}</span>`; }
+  else if (gone.length) { st.className = 'state bad'; st.innerHTML = `<b>${L('Красный: дефект починили', 'Red: a defect was fixed')}</b><span>${L('Больше не найдено: ', 'No longer found: ')}${esc(gone.join(', '))}. ${L('Уберите его из списка — так список только сокращается.', 'Remove it from the list: that is how the list only shrinks.')}</span>`; }
+  else if (spread.length) { st.className = 'state warn'; st.innerHTML = `<b>${L('Красный: дефект расползся', 'Red: a defect spread')}</b><span>${esc(spread.join(', '))}. ${L('Добавьте его этому экрану осознанно, если это правда.', 'Add it to this screen on purpose, if that is true.')}</span>`; }
+  else { st.className = 'state ok'; st.innerHTML = `<b>${L('Зелёный', 'Green')}</b><span>${L('Все серьёзные нарушения известны, все ожидаемые — на месте. Обычный «ноль нарушений» здесь был бы красным всегда.', 'Every serious violation is known and every expected one is in place. A plain "zero violations" check would be red here forever.')}</span>`; }
+}
+
+/* 02 engines */
+const ENG = [
+  ['agree', ['Поле поиска без имени', 'Search field without a name'], 1, 1, ['UI-A11Y-3, оба', 'UI-A11Y-3, both']],
+  ['agree', ['Фото в карусели без alt', 'Carousel photos without alt'], 1, 1, ['UI-A11Y-8; Pa11y считает и слайды за экраном (8 против 3)', 'UI-A11Y-8; Pa11y also counts off-screen slides (8 vs 3)']],
+  ['agree', ['Слайдер оценки без имени', 'Rating slider without a name'], 1, 1, ['UI-A11Y-11', 'UI-A11Y-11']],
+  ['pa11y', ['Иконка меню 2.9:1 на панели', 'Menu icon 2.9:1 on the bar'], 0, 1, ['UI-A11Y-13: axe пропускает aria-hidden иконки, а WCAG 1.4.11 требует 3:1', 'UI-A11Y-13: axe skips aria-hidden icons, WCAG 1.4.11 asks 3:1']],
+  ['axe', ['Ссылка Terms только цветом', 'Terms link by colour only'], 1, 0, ['UI-A11Y-9: правило есть только у axe', 'UI-A11Y-9: an axe-only rule']],
+  ['axe', ['Карусель недоступна с клавиатуры', 'Carousel not reachable by keyboard'], 1, 0, ['UI-A11Y-10', 'UI-A11Y-10']],
+  ['axe', ['Кнопки корзины, радио, контраст e-mail', 'Basket buttons, radios, e-mail contrast'], 1, 0, ['Pa11y видит только гостевые страницы', 'Pa11y sees guest pages only']],
+  ['fp', ['Скрытая кнопка закрытого меню', 'Hidden button of the closed menu'], 0, 1, ['ложное: скрытое не озвучивается', 'false positive: hidden is not exposed']],
+  ['fp', ['href="#/register" «ведёт в никуда»', 'href="#/register" "points nowhere"'], 0, 1, ['ложное: это маршрут hash-роутинга', 'false positive: a hash-routing route']],
+  ['fp', ['<input hidden> без имени', '<input hidden> without a name'], 0, 1, ['ложное: его никто не видит', 'false positive: nobody sees it']],
+];
+function renderEng() {
+  chips('eng-chips', [['all', 'Все', 'All'], ['agree', 'Согласны', 'Agree'], ['axe', 'Только axe', 'axe only'], ['pa11y', 'Только Pa11y', 'Pa11y only'], ['fp', 'Ложные', 'False positives']], S.eng, 'eng');
+  const rows = ENG.filter((r) => S.eng === 'all' || r[0] === S.eng);
+  $('eng').innerHTML = `<div class="erow head"><span>${L('находка', 'finding')}</span><span class="y">axe</span><span class="y">Pa11y</span><span>${L('решение', 'verdict')}</span></div>` +
+    rows.map((r) => `<div class="erow"><span>${esc(L(...r[1]))}</span><span class="y ${r[2] ? '' : 'no'}">${r[2] ? '✓' : '–'}</span><span class="y ${r[3] ? '' : 'no'}">${r[3] ? '✓' : '–'}</span><span>${r[0] === 'fp' ? '<span class="tag warn">FP</span> ' : ''}${esc(L(...r[4]))}</span></div>`).join('');
+}
+
+/* 03 focus pictures */
+function renderFocus() {
+  chips('m7-chips', [['false', 'Магазин как есть', 'Shop as it is'], ['true', 'Посадить баг M7', 'Plant bug M7']], S.m7, 'm7');
+  const f = S.m7 ? '' : 'focus';
+  $('pics').innerHTML = `<div class="pic"><div class="fbtn">🔍</div><span class="cap">${L('в покое', 'at rest')}</span></div><div class="pic"><div class="fbtn ${f}">🔍</div><span class="cap">${L('после Tab', 'after Tab')}</span></div>`;
+  $('m7-verdict').innerHTML = S.m7
+    ? `<h3>${L('Картинки одинаковые', 'The pictures are identical')}</h3><p class="muted">${L('Стили: opacity слоя 0 → 0.12, «изменилось» — старый тест зелёный. Пиксели: ни одного отличия — новый тест красный: «Open search ✗ looks the same focused and unfocused».', 'Styles: the layer\'s opacity 0 → 0.12, "changed": the old test was green. Pixels: not one differs: the new test is red, "Open search ✗ looks the same focused and unfocused".')}</p><p><span class="tag bad">${L('пойман', 'caught')}</span></p>`
+    : `<h3>${L('Картинки различаются', 'The pictures differ')}</h3><p class="muted">${L('Material рисует кольцо фокуса и светлый слой на дочерних span-ах. Тест делает снимок каждой остановки Tab в покое, перезагружает страницу, проходит Tab’ом и снимает ещё раз.', 'Material draws the focus ring and a light layer on child spans. The test takes a picture of each Tab stop at rest, reloads the page, Tabs through and takes it again.')}</p><p><span class="tag ok">${L('фокус видно', 'focus visible')}</span></p>`;
+}
+
+/* 05 tolerance */
+const SHOTS = [
+  ['card', 'Карточка товара 326×495', 'Product card 326×495', 326 * 495],
+  ['page', 'Страница целиком 1280×720', 'Full page 1280×720', 1280 * 720],
+  ['bar', 'Верхняя панель 1280×72', 'Top bar 1280×72', 1280 * 72],
+];
+const RATIOS = [0, 0.0001, 0.0005, 0.001, 0.005, 0.01];
+function renderTol() {
+  chips('shot-chips', SHOTS.map((s, i) => [i, s[1], s[2]]), S.shot, 'shot');
+  const r = RATIOS[+$('ratio').value];
+  $('ratio-v').textContent = String(r);
+  const area = SHOTS[S.shot][3];
+  const budget = Math.round(area * r);
+  const change = 150;
+  const max = Math.max(budget, change, 10) * 1.15;
+  const row = (label, v, color) => `<div class="mrow"><span>${label}</span><div class="mbar"><i style="width:${Math.min(100, (v / max) * 100)}%;background:${color}"></i></div><b>${v} px</b></div>`;
+  const caughtRatio = change > budget, caughtFixed = change > 10;
+  $('meter').innerHTML = row(L('изменение (серая цена)', 'change (grey price)'), change, 'var(--bad)') +
+    row(L('допуск: доля', 'tolerance: ratio'), budget, 'var(--accent)') +
+    row(L('допуск: 10 px', 'tolerance: 10 px'), 10, 'var(--px)') +
+    `<div class="state ${caughtRatio ? 'ok' : 'bad'}"><b>${caughtRatio ? L('Доля: пойман', 'Ratio: caught') : L('Доля: пропущен', 'Ratio: missed')}</b><span>${L(`${(r * 100).toFixed(2)} % от ${area.toLocaleString('ru')} px = ${budget} px допуска.`, `${(r * 100).toFixed(2)} % of ${area.toLocaleString('en')} px = a ${budget} px allowance.`)}</span></div>` +
+    `<div class="state ${caughtFixed ? 'ok' : 'bad'}"><b>${L('Бюджет 10 px: пойман', 'Budget of 10 px: caught')}</b><span>${L('Не зависит от размера снимка. Три прогона подряд дали одинаковые картинки, так что строгость не стоит нестабильности.', 'Does not grow with the shot. Three runs in a row gave identical pictures, so strictness costs no flakiness.')}</span></div>`;
+}
+$('ratio').addEventListener('input', renderTol);
+
+/* 06 flow */
+function renderFlow() {
+  const F = [
+    ['ok', ['Эталона нет', 'No baseline'], ['--update-snapshots=missing пишет недостающие снимки, job коммитит их в tests/__screenshots__. Существующие не трогает: ничего не утверждается случайно.', '--update-snapshots=missing writes the missing pictures and the job commits them to tests/__screenshots__. Existing ones are not touched: nothing is approved by accident.']],
+    ['bad', ['Экран изменился', 'A screen changed'], ['Job красный, в артефакте visual-diffs — ожидаемая картинка, фактическая и разница. Баг — чиним магазин.', 'The job is red; the visual-diffs artifact has the expected, actual and diff images. A bug: fix the shop.']],
+    ['ac', ['Изменение задумано', 'The change is intended'], ['Actions → Tests → Run workflow → «Approve the current screens». Этот прогон пишет все снимки заново и коммитит.', 'Actions → Tests → Run workflow → "Approve the current screens". That run rewrites every picture and commits.']],
+  ];
+  $('flow').innerHTML = F.map((f) => `<div class="panel"><h3><span class="tag ${f[0]}">${f[0] === 'ok' ? 'missing' : f[0] === 'bad' ? 'diff' : 'approve'}</span>${L(...f[1])}</h3><p class="muted">${L(...f[2])}</p></div>`).join('');
+}
+
+/* 07 mutants */
+const MUT = [
+  ['M7', ['Фокус невидим: outline: none и скрытый слой Material', 'Focus invisible: outline: none and Material\'s layer hidden'], ['клавиатура: видимый фокус — после исправления теста', 'keyboard: focus visible, after the test was fixed']],
+  ['M8', ['Починка UI-A11Y-3: aria-label="Search"', 'Fix of UI-A11Y-3: aria-label="Search"'], ['храповик axe на всех 12 экранах', 'the axe ratchet on all 12 screens']],
+  ['M9', ['Кнопка Checkout ниже на 4 px, без скруглений', 'Checkout button 4 px lower, square corners'], ['скриншот: корзина', 'screenshot: basket']],
+  ['M10', ['Цены светло-серым', 'Prices in light grey'], ['axe: новый контраст; скриншот — после замены доли на бюджет', 'axe: new contrast; screenshot after the ratio became a budget']],
+];
+function renderMut() { $('mut').innerHTML = MUT.map((m) => `<div class="r"><b>${m[0]}</b><span>${esc(L(...m[1]))}</span><span class="muted">${esc(L(...m[2]))}</span><span class="tag ok">${L('пойман', 'caught')}</span></div>`).join(''); }
+
+const TERMS = [
+  ['WCAG 2.2 AA', ['Стандарт доступности W3C; уровень AA — то, что требуют законы и EN 301 549.', 'The W3C accessibility standard; level AA is what laws and EN 301 549 require.']],
+  ['ratchet', ['Проверка, которая пропускает только улучшения: новое — красное, исправленное надо вычеркнуть.', 'A check that only lets things improve: new is red, fixed must be crossed off.']],
+  ['axe-core / HTML_CodeSniffer', ['Два независимых движка правил WCAG; второй работает внутри Pa11y.', 'Two independent WCAG rule engines; the second runs inside Pa11y.']],
+  ['Reflow (1.4.10)', ['Контент помещается в 320 CSS px без прокрутки вбок.', 'Content fits 320 CSS px with no sideways scrolling.']],
+  ['baseline', ['Утверждённый скриншот, с которым сравнивается каждый прогон.', 'The approved screenshot every run is compared with.']],
+  ['maxDiffPixels', ['Сколько пикселей может отличаться, прежде чем снимок считается изменённым.', 'How many pixels may differ before a shot counts as changed.']],
+];
+function renderTerms() { $('terms').innerHTML = TERMS.map((t) => `<div><dt>${esc(t[0])}</dt><dd>${L(...t[1])}</dd></div>`).join(''); }
+const CMDS = ['npm run test:a11y', 'npm run a11y:pa11y && node scripts/pa11y-summary.mjs', 'npm run test:visual', 'docker run --rm --network host -v $PWD:/work -w /work mcr.microsoft.com/playwright:v1.64.1-noble npm run test:visual'];
+function renderCmds() { $('cmds').innerHTML = CMDS.map((c, i) => `<div class="cmd"><code id="cmd-${i}">${esc(c)}</code><button type="button" data-c="${i}">${L('Копировать', 'Copy')}</button></div>`).join(''); }
+$('cmds').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  const done = () => { b.textContent = L('Скопировано', 'Copied'); setTimeout(() => (b.textContent = L('Копировать', 'Copy')), 1500); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('cmd-' + b.dataset.c)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+  try { navigator.clipboard.writeText(CMDS[+b.dataset.c]).then(done, fallback); } catch (err) { fallback(); }
+});
+
+function renderAll() { renderRatchet(); renderEng(); renderFocus(); renderTol(); renderFlow(); renderMut(); renderTerms(); renderCmds(); }
+function setLang(l) {
+  S.lang = l; document.body.dataset.lang = l; document.documentElement.lang = l;
+  $('lang-ru').setAttribute('aria-pressed', l === 'ru');
+  $('lang-en').setAttribute('aria-pressed', l === 'en');
+  try { localStorage.setItem('a11y-visual-lang', l); } catch (e) {}
+  renderAll();
+}
+document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.l)));
+let start = document.documentElement.dataset.defaultLang || 'ru';
+try { start = localStorage.getItem('a11y-visual-lang') || start; } catch (e) {}
+setLang(start);
+</script>
+</body>
+</html>

@@ -14,6 +14,8 @@ export const DEFECTS = {
   'UI-TXT-3': 'Order summary label has a stray quote: Card Holder"',
   'UI-TXT-4': 'Password counter says /20 while the field accepts 40 characters',
   'UI-AUTH-1': 'Order history opens for a guest instead of sending them to log in',
+  'UI-A11Y-14':
+    'At 320 px wide (WCAG 1.4.10 Reflow) product cards are cut off and the content area scrolls sideways',
 } as const;
 
 export function knownDefect(id: keyof typeof DEFECTS) {

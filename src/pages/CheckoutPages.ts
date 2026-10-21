@@ -27,7 +27,7 @@ export class AddressPage {
   }
 
   async choose(fullName: string) {
-    // The radio has no accessible name (finding UI-A11Y-3); the row is picked by its text.
+    // The radio has no accessible name (defect UI-A11Y-2); the row is picked by its text.
     await this.rows().filter({ hasText: fullName }).locator('mat-radio-button').click();
     await expect(this.proceed).toBeEnabled();
     await this.proceed.click();
