@@ -21,7 +21,10 @@
     "a11y:pa11y": "pa11y-ci --config .pa11yci.js",
     "test:a11y": "playwright test tests/a11y",
     "test:visual": "playwright test --grep @visual --project=chromium --project=mobile-chrome",
-    "test:visual:update": "playwright test --grep @visual --project=chromium --project=mobile-chrome --update-snapshots"
+    "test:visual:update": "playwright test --grep @visual --project=chromium --project=mobile-chrome --update-snapshots",
+    "perf:lhci": "lhci autorun --config=lighthouserc.cjs",
+    "perf:lhci:mobile": "LHCI_FORM_FACTOR=mobile lhci autorun --config=lighthouserc.cjs",
+    "perf:flow": "node scripts/lh-flow.mjs"
   },
   "lint-staged": {
     "*.{ts,mjs,js}": [
@@ -33,6 +36,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "allure-commandline": "^2.46.1",
@@ -43,6 +47,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-playwright": "^2.12.1",
     "husky": "^9.1.7",
+    "lighthouse": "^13.5.0",
     "lint-staged": "^16.4.0",
     "pa11y-ci": "^5.0.0",
     "prettier": "^3.9.10",

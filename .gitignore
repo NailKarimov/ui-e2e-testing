@@ -11,3 +11,5 @@ Thumbs.db
 .claude/
 playwright/.auth/
 pa11y-report/
+.lighthouseci/
+lighthouse-report/

@@ -83,6 +83,26 @@ jobs:
           npm run a11y:pa11y > /dev/null || true   # the summary below decides: known, false positive or NEW
           node scripts/pa11y-summary.mjs >> "$GITHUB_STEP_SUMMARY"
 
+      # Performance after the functional run, on the same Juice Shop. Lighthouse simulates the throttling
+      # (slow 4G, 4x CPU for mobile) instead of applying it, which keeps runs on a shared runner comparable.
+      - name: Lighthouse CI, desktop and mobile
+        id: lhci
+        if: always()
+        continue-on-error: true
+        run: |
+          npm run perf:lhci
+          npm run perf:lhci:mobile
+
+      - name: Lighthouse user flow (INP)
+        id: flow
+        if: always()
+        continue-on-error: true
+        run: npm run perf:flow
+
+      - name: Performance summary
+        if: always()
+        run: node scripts/perf-summary.mjs >> "$GITHUB_STEP_SUMMARY"
+
       - name: Restore Allure history
         if: always()
         run: |
@@ -101,6 +121,10 @@ jobs:
         if: always()
         run: |
           for f in docs/*.html; do if [ -f "$f" ]; then cp "$f" allure-report/; fi; done
+          if [ -d lighthouse-report ]; then
+            mkdir -p allure-report/lighthouse
+            cp lighthouse-report/*.html lighthouse-report/summary.md lighthouse-report/flow-summary.json allure-report/lighthouse/ 2>/dev/null || true
+          fi
           true
 
       - name: Publish Allure report to GitHub Pages
@@ -120,10 +144,13 @@ jobs:
             playwright-report
             test-results
             pa11y-report
+            lighthouse-report
           retention-days: 14
 
-      - name: Fail the job if tests failed or Pa11y found something new
-        if: steps.tests.outcome == 'failure' || steps.pa11y.outcome == 'failure'
+      - name: Fail the job if tests failed, Pa11y found something new or a performance ceiling was crossed
+        if: >-
+          steps.tests.outcome == 'failure' || steps.pa11y.outcome == 'failure' ||
+          steps.lhci.outcome == 'failure' || steps.flow.outcome == 'failure'
         run: exit 1
 
   # Visual regression runs inside Playwright's own Docker image, so fonts and rendering are the same on every run

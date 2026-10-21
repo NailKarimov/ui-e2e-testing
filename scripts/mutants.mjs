@@ -86,6 +86,39 @@ export const MUTANTS = [
     to: '\n.price{color:#8a8a8a!important}\n',
     caughtBy: 'visual: product card; axe: new color-contrast on the product list',
   },
+  {
+    id: 'M11',
+    what: 'Every click blocks the main thread for 400 ms (a slow event handler)',
+    from: '',
+    to: '\n;document.addEventListener("click",()=>{const t=performance.now();while(performance.now()-t<400){}},true);\n',
+    caughtBy: 'Lighthouse user flow: INP over the ceiling',
+  },
+  {
+    id: 'M12',
+    what: 'A 1.5 s synchronous task at start-up',
+    from: '',
+    to: '\n;{const t=performance.now();while(performance.now()-t<1500){}}\n',
+    caughtBy: 'Lighthouse CI: TBT and the performance score over the ceiling',
+  },
+  {
+    id: 'M13',
+    what: 'A late banner pushes the page down 0.8 s after load (layout shift)',
+    from: '',
+    to: '\n;setTimeout(()=>{const d=document.createElement("div");d.style.height="160px";d.textContent="Promo";const c=document.querySelector("mat-sidenav-content")||document.body;c.prepend(d)},800);\n',
+    caughtBy: 'Lighthouse CI: CLS over the ceiling',
+  },
+  {
+    id: 'M14',
+    what: '300 KB of incompressible data added to the main bundle',
+    from: '',
+    to:
+      '\n/*' +
+      Array.from({ length: (300 * 1024) / 16 }, (_, i) =>
+        ((i * 2654435761) >>> 0).toString(16).padStart(16, '0'),
+      ).join('') +
+      '*/\n',
+    caughtBy: 'Lighthouse CI: the script size budget',
+  },
 ];
 
 const [cmd, file, id] = process.argv.slice(2);
