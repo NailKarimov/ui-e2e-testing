@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en" data-default-lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Juice Shop speed budgets</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Layout: a stopwatch bench. A ruler per metric with target and ceiling zones, the phone's time budget split into
+   its parts, a user flow you step through, the hash-route trap, planted bugs. */
+:root {
+  --bg: #eef0f4; --surface: #ffffff; --sunken: #e2e6ee; --ink: #141720; --muted: #5a6070; --line: #cfd4df;
+  --accent: #b45309; --accent-soft: #fdecd3; --px: #0f6b73; --px-soft: #d5eeee;
+  --ok: #17784b; --ok-soft: #d8f1e3; --bad: #b42318; --bad-soft: #fbe1dd; --warn: #8a6100; --warn-soft: #f7ebc8;
+  --font-display: 'Bricolage Grotesque', 'Public Sans', system-ui, sans-serif;
+  --font-body: 'Public Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101219; --surface: #181b24; --sunken: #20242f; --ink: #e8eaf1; --muted: #a0a6b5; --line: #2e3341;
+    --accent: #f5b25c; --accent-soft: #3d2608; --px: #6fd3db; --px-soft: #0f3134;
+    --ok: #62d49a; --ok-soft: #12321f; --bad: #ff8a7d; --bad-soft: #3d1714; --warn: #f1c35a; --warn-soft: #3a2d0c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101219; --surface: #181b24; --sunken: #20242f; --ink: #e8eaf1; --muted: #a0a6b5; --line: #2e3341;
+  --accent: #f5b25c; --accent-soft: #3d2608; --px: #6fd3db; --px-soft: #0f3134;
+  --ok: #62d49a; --ok-soft: #12321f; --bad: #ff8a7d; --bad-soft: #3d1714; --warn: #f1c35a; --warn-soft: #3a2d0c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--font-body); margin: 0; }
+body[data-lang="ru"] [lang="en"], body[data-lang="en"] [lang="ru"] { display: none !important; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.1; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 50px); font-weight: 800; letter-spacing: -0.02em; }
+h2 { font-size: clamp(22px, 2.8vw, 30px); font-weight: 800; letter-spacing: -0.01em; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; max-width: 70ch; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+a { color: var(--accent); }
+button { font-family: var(--font-body); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+header.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-block: 20px; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.seg button { font: 500 13px var(--font-mono); background: transparent; color: var(--muted); border: 0; padding: 6px 14px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.hero { display: grid; gap: 16px; padding-block: 8px; }
+.hero .lead { font-size: 18px; color: var(--muted); }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 14px; color: var(--muted); }
+.facts b { font: 800 24px var(--font-display); color: var(--ink); margin-right: 6px; font-variant-numeric: tabular-nums; }
+section.station { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-block: 52px 0; }
+section.station > header { display: grid; gap: 8px; }
+.num { font: 700 13px var(--font-mono); color: var(--accent); }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { font: 500 13.5px var(--font-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+.chips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+@media (max-width: 780px) { .two { grid-template-columns: minmax(0, 1fr); } }
+pre.code { margin: 0; background: var(--sunken); border-radius: 8px; padding: 10px 12px; font: 400 12.5px/1.55 var(--font-mono); overflow-x: auto; white-space: pre; }
+.tag { font: 600 11px var(--font-mono); padding: 2px 7px; border-radius: 4px; display: inline-block; white-space: nowrap; }
+.tag.ok { background: var(--ok-soft); color: var(--ok); } .tag.bad { background: var(--bad-soft); color: var(--bad); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); } .tag.ac { background: var(--accent-soft); color: var(--accent); }
+.tag.px { background: var(--px-soft); color: var(--px); }
+.state { border-radius: 12px; padding: 14px; display: grid; gap: 4px; font-size: 15px; }
+.state.ok { background: var(--ok-soft); } .state.bad { background: var(--bad-soft); } .state.warn { background: var(--warn-soft); }
+.state b { font-family: var(--font-display); font-size: 19px; }
+
+/* ruler */
+.ruler { position: relative; height: 54px; border-radius: 10px; overflow: hidden; display: flex; border: 1px solid var(--line); }
+.ruler .z { height: 100%; }
+.ruler .z.g { background: var(--ok-soft); } .ruler .z.y { background: var(--warn-soft); } .ruler .z.r { background: var(--bad-soft); }
+.ruler .band { position: absolute; top: 10px; bottom: 10px; background: var(--ink); opacity: .85; border-radius: 4px; min-width: 4px; }
+.ruler .mark { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--bad); }
+.ticks { position: relative; height: 42px; font: 500 12px var(--font-mono); color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); align-items: center; }
+.sw { display: inline-block; width: 14px; height: 10px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+/* breakdown */
+.bars { display: grid; gap: 8px; }
+.bar { display: grid; grid-template-columns: 170px minmax(0, 1fr) 80px; gap: 10px; align-items: center; font-size: 14px; }
+.bar .t { height: 16px; border-radius: 4px; background: var(--sunken); overflow: hidden; }
+.bar .t i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+.bar b { font: 700 13px var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .bar { grid-template-columns: minmax(0, 1fr) 70px; } .bar .t { grid-column: 1 / -1; grid-row: 2; } }
+/* flow */
+.steps { display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); }
+.step { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); font-size: 14.5px; }
+.step b { font: 700 12px var(--font-mono); color: var(--muted); }
+.step.hot { border-color: var(--accent); background: var(--accent-soft); }
+.step[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: -1px; }
+/* urls */
+.urls { display: grid; gap: 6px; font: 500 13px var(--font-mono); }
+.urls div { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; overflow-wrap: anywhere; display: flex; justify-content: space-between; gap: 10px; }
+.mut { display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); }
+.mut .r { display: grid; grid-template-columns: 44px minmax(0, 1.2fr) minmax(0, 1.4fr) 110px; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14.5px; }
+@media (max-width: 760px) { .mut .r { grid-template-columns: minmax(0, 1fr); gap: 4px; } }
+.mut .r > b { font-family: var(--font-mono); } .mut .r > .tag { justify-self: start; }
+dl.terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; }
+@media (max-width: 760px) { dl.terms { grid-template-columns: minmax(0, 1fr); } }
+dl.terms div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; }
+dt { font: 700 13.5px var(--font-mono); } dd { margin: 4px 0 0; font-size: 14.5px; color: var(--muted); }
+.cmds { display: grid; gap: 6px; grid-template-columns: minmax(0, 1fr); }
+.cmd { display: flex; gap: 8px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px 8px 8px 14px; min-width: 0; }
+.cmd code { flex: 1; overflow-x: auto; white-space: nowrap; }
+.cmd button { font: 600 12px var(--font-mono); border: 1px solid var(--line); background: var(--sunken); color: var(--ink); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+footer { padding-top: 48px; font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body data-lang="ru">
+<div class="wrap">
+  <header class="top">
+    <span class="eyebrow">ui-e2e-testing · Lighthouse CI · Core Web Vitals</span>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" id="lang-ru" data-l="ru" aria-pressed="true">RU</button>
+      <button type="button" id="lang-en" data-l="en" aria-pressed="false">EN</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 lang="ru">Скорость Juice Shop: цель и потолок</h1>
+    <h1 lang="en">Juice Shop speed: target and ceiling</h1>
+    <p class="lead" lang="ru">Сколько покупатель ждёт главный контент, насколько страница прыгает и как быстро она отвечает на клик. Lighthouse CI измеряет загрузку трёх страниц на компьютере и телефоне при каждом пуше, а пользовательский сценарий Lighthouse — отклик на действия (INP).</p>
+    <p class="lead" lang="en">How long a customer waits for the main content, how much the page jumps, and how fast it answers a click. Lighthouse CI measures the load of three pages on desktop and phone on every push, and a Lighthouse user flow measures responsiveness (INP).</p>
+    <div class="facts">
+      <span><b>3 × 3</b><span lang="ru">страницы × прогона, медиана</span><span lang="en">pages × runs, median</span></span>
+      <span><b>6.6 s</b><span lang="ru">LCP на телефоне (цель 2.5)</span><span lang="en">phone LCP (target 2.5)</span></span>
+      <span><b>123 ms</b><span lang="ru">INP, цель 200</span><span lang="en">INP, target 200</span></span>
+      <span><b>4/4</b><span lang="ru">посаженных бага пойманы</span><span lang="en">planted bugs caught</span></span>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h1x">
+    <header>
+      <span class="num">01</span>
+      <h2 id="h1x" lang="ru">Две границы на каждую метрику</h2><h2 lang="en">Two limits per metric</h2>
+      <p class="muted" lang="ru">Зелёная зона — цель Google («хорошо»): если её не достигли, сборка жёлтая, но не падает. Красная начинается с потолка: сегодняшнее значение в CI плюс запас на шум. Чёрная полоса — что намерено сегодня, красная черта — посаженный баг.</p>
+      <p class="muted" lang="en">The green zone is Google's target ("good"): missing it turns the build yellow, not red. Red starts at the ceiling: today's CI value plus a margin for noise. The black band is today's measurement, the red line a planted bug.</p>
+    </header>
+    <div class="chips" id="metric-chips" role="group" aria-label="Metric"></div>
+    <div class="chips" id="form-chips" role="group" aria-label="Device"></div>
+    <div>
+      <div class="ruler" id="ruler"></div>
+      <div class="ticks" id="ticks"></div>
+    </div>
+    <div class="legend"><span><span class="sw" style="background:var(--ok-soft)"></span><span lang="ru">цель</span><span lang="en">target</span></span><span><span class="sw" style="background:var(--warn-soft)"></span><span lang="ru">ниже цели, в пределах потолка</span><span lang="en">misses the target, within the ceiling</span></span><span><span class="sw" style="background:var(--bad-soft)"></span><span lang="ru">выше потолка: сборка красная</span><span lang="en">over the ceiling: build fails</span></span></div>
+    <div class="state" id="metric-state" aria-live="polite"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h2x">
+    <header>
+      <span class="num">02</span>
+      <h2 id="h2x" lang="ru">Куда уходят 6.6 секунды на телефоне</h2><h2 lang="en">Where the phone's 6.6 seconds go</h2>
+      <p class="muted" lang="ru">Отчёт Lighthouse по главной странице, телефон, медленный 4G и процессор в 4 раза медленнее. Angular ничего не рисует, пока JavaScript не пришёл и не выполнился.</p>
+      <p class="muted" lang="en">Lighthouse's report for the home page, phone, slow 4G and a 4× slower CPU. Angular draws nothing until its JavaScript has arrived and run.</p>
+    </header>
+    <div class="two">
+      <div class="panel"><h3 lang="ru">Работа главного потока, 2.2 s</h3><h3 lang="en">Main-thread work, 2.2 s</h3><div class="bars" id="cpu"></div></div>
+      <div class="panel"><h3 lang="ru">Передано по сети, 1.07 MB</h3><h3 lang="en">Transferred, 1.07 MB</h3><div class="bars" id="bytes"></div></div>
+    </div>
+    <p class="muted" lang="ru">158 KB JavaScript на главной не используются (44 % <code>main.js</code>). Очевидное лечение — делить бандл по маршрутам; потолок следит, чтобы до тех пор не стало хуже.</p>
+    <p class="muted" lang="en">158 KB of the JavaScript are unused on the home page (44 % of <code>main.js</code>). The obvious fix is splitting the bundle by route; the ceiling makes sure it doesn't get worse until then.</p>
+  </section>
+
+  <section class="station" aria-labelledby="h3x">
+    <header>
+      <span class="num">03</span>
+      <h2 id="h3x" lang="ru">INP нужен человек, а не загрузка</h2><h2 lang="en">INP needs a person, not a page load</h2>
+      <p class="muted" lang="ru">Обычный прогон Lighthouse загружает страницу и останавливается: никто не кликает, INP измерить нечем, есть только TBT — его лабораторная замена. Пользовательский сценарий записывает настоящие действия. Нажмите на шаг.</p>
+      <p class="muted" lang="en">A normal Lighthouse run loads a page and stops: nobody clicks, so INP can't be measured; there is only TBT, its lab stand-in. The user flow records real actions. Click a step.</p>
+    </header>
+    <div class="two">
+      <div class="steps" id="steps"></div>
+      <div class="panel" id="step-info" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="station" aria-labelledby="h4x">
+    <header>
+      <span class="num">04</span>
+      <h2 id="h4x" lang="ru">Ловушка hash-маршрутов</h2><h2 lang="en">The hash-route trap</h2>
+      <p class="muted" lang="ru">Lighthouse CI группирует прогоны по URL без части после <code>#</code>. У Juice Shop все маршруты после решётки — три страницы слились в одну с девятью прогонами, и медиана считалась по смеси.</p>
+      <p class="muted" lang="en">Lighthouse CI groups runs by URL without the part after <code>#</code>. Juice Shop routes everything after the hash, so three pages merged into one with nine runs, and the median was taken over a mix.</p>
+    </header>
+    <div class="chips" id="url-chips" role="group" aria-label="URLs"></div>
+    <div class="urls" id="urls"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h5x">
+    <header>
+      <span class="num">05</span>
+      <h2 id="h5x" lang="ru">Ловят ли бюджеты регрессии</h2><h2 lang="en">Do the budgets catch regressions</h2>
+      <p class="muted" lang="ru">По одному багу в собранный фронтенд магазина. M14 сначала прошёл: Lighthouse 12 молча игнорирует <code>budgets</code>, проверке было нечего проверять.</p>
+      <p class="muted" lang="en">One bug at a time in the shop's built frontend. M14 passed at first: Lighthouse 12 silently ignores <code>budgets</code>, so the check had nothing to check.</p>
+    </header>
+    <div class="mut" id="mut"></div>
+  </section>
+
+  <section class="station" aria-labelledby="h6x">
+    <header><span class="num">06</span><h2 id="h6x" lang="ru">Словарь и команды</h2><h2 lang="en">Terms and commands</h2></header>
+    <dl class="terms" id="terms"></dl>
+    <div class="cmds" id="cmds"></div>
+  </section>
+
+  <footer>
+    <span lang="ru">Отчёты последнего прогона: <a href="https://nailkarimov.github.io/ui-e2e-testing/lighthouse/">nailkarimov.github.io/ui-e2e-testing/lighthouse/</a> · текстом: <code>docs/lighthouse.md</code>.</span>
+    <span lang="en">Reports of the latest run: <a href="https://nailkarimov.github.io/ui-e2e-testing/lighthouse/">nailkarimov.github.io/ui-e2e-testing/lighthouse/</a> · as text: <code>docs/lighthouse.md</code>.</span>
+  </footer>
+</div>
+
+<script>
+const S = { lang: 'ru', metric: 'lcp', form: 'mobile', urls: 'before', step: 2 };
+const L = (ru, en) => (S.lang === 'ru' ? ru : en);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const $ = (id) => document.getElementById(id);
+function chips(id, items, cur, key) {
+  $(id).innerHTML = items.map(([v, ru, en]) => `<button type="button" data-v="${v}" aria-pressed="${String(v) === String(cur)}">${L(ru, en)}</button>`).join('');
+  $(id).onclick = (e) => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.v; renderAll(); };
+}
+
+/* 01: [target, desktop [min,max,ceiling], mobile [...], unit, max of scale, mutant [value, id] ] */
+const M = {
+  lcp: { n: 'LCP', t: 2500, d: [1160, 1220, 1800], m: [5470, 6580, 8000], max: { desktop: 3000, mobile: 10000 }, u: 's', mut: null, about: ['Когда показался самый большой элемент: картинка товара или заголовок.', 'When the largest element appeared: a product image or a heading.'] },
+  fcp: { n: 'FCP', t: 1800, d: [690, 710, 1100], m: [3460, 3480, 4500], max: { desktop: 2000, mobile: 6000 }, u: 's', mut: null, about: ['Когда появилось хоть что-то, кроме пустого экрана.', 'When anything other than a blank screen appeared.'] },
+  tbt: { n: 'TBT', t: 200, d: [14, 23, 150], m: [182, 310, 600], max: { desktop: 1700, mobile: 2000 }, u: 'ms', mut: { desktop: [1500, 'M12'] }, about: ['Сколько времени главный поток был занят задачами длиннее 50 мс: в это время клик не обрабатывается.', 'How long the main thread was busy with tasks over 50 ms: clicks wait during that time.'] },
+  cls: { n: 'CLS', t: 0.1, d: [0.018, 0.073, 0.12], m: [0.002, 0.065, 0.12], max: { desktop: 0.4, mobile: 0.4 }, u: '', mut: { desktop: [0.3, 'M13'], mobile: [0.3, 'M13'] }, about: ['Насколько содержимое сдвигалось само по себе, пока человек смотрел.', 'How much content moved on its own while a person was looking.'] },
+  inp: { n: 'INP', t: 200, d: [107, 129, 300], m: null, max: { desktop: 800 }, u: 'ms', mut: { desktop: [665, 'M11'] }, about: ['Самая медленная реакция на клик или ввод за весь сценарий: от действия до следующей отрисовки.', 'The slowest reaction to a click or key press in the whole flow: from the action to the next paint.'] },
+};
+const fmt = (v, u) => (u === 's' ? `${(v / 1000).toFixed(1)} s` : u === 'ms' ? `${Math.round(v)} ms` : v.toFixed(2));
+function renderRuler() {
+  chips('metric-chips', Object.entries(M).map(([k, m]) => [k, m.n, m.n]), S.metric, 'metric');
+  const m = M[S.metric];
+  if (!m.m && S.form === 'mobile') S.form = 'desktop';
+  chips('form-chips', m.m ? [['desktop', 'Компьютер', 'Desktop'], ['mobile', 'Телефон', 'Phone']] : [['desktop', 'Компьютер (сценарий только здесь)', 'Desktop (the flow runs here only)']], S.form, 'form');
+  const v = S.form === 'mobile' ? m.m : m.d;
+  const max = m.max[S.form];
+  const pct = (x) => Math.min(100, (x / max) * 100);
+  const mut = m.mut?.[S.form];
+  // A ceiling can be stricter than the target (desktop TBT): then there is no yellow zone at all.
+  const green = Math.min(pct(m.t), pct(v[2]));
+  $('ruler').innerHTML = `<div class="z g" style="width:${green}%"></div><div class="z y" style="width:${Math.max(0, pct(v[2]) - green)}%"></div><div class="z r" style="flex:1"></div>` +
+    `<div class="band" style="left:${pct(v[0])}%;width:${Math.max(0.6, pct(v[1]) - pct(v[0]))}%" title="today"></div>` + (mut ? `<div class="mark" style="left:${pct(mut[0])}%"></div>` : '');
+  const ticks = [[m.t, L('цель', 'target')], [v[2], L('потолок', 'ceiling')]];
+  $('ticks').innerHTML = ticks.map(([x, l], i) => `<span style="left:${Math.min(92, Math.max(8, pct(x)))}%;top:${i * 20}px">${l} ${fmt(x, m.u)}</span>`).join('');
+  const st = $('metric-state');
+  const ok = v[1] <= m.t;
+  st.className = 'state ' + (ok ? 'ok' : 'warn');
+  const strict = v[2] < m.t ? ` ${L('Потолок строже цели: на компьютере запас такой большой, что регрессию поймает раньше, чем значение дойдёт до цели.', 'The ceiling is stricter than the target: on desktop there is so much headroom that a regression is caught long before the value reaches the target.')}` : '';
+  st.innerHTML = `<b>${m.n}: ${fmt(v[0], m.u)}–${fmt(v[1], m.u)} ${ok ? L('— в цели', '— on target') : L('— ниже цели, сборка жёлтая', '— misses the target, build is yellow')}</b><span>${L(...m.about)}${mut ? ` ${L(`Баг ${mut[1]} даёт ${fmt(mut[0], m.u)} — выше потолка, сборка красная.`, `Bug ${mut[1]} gives ${fmt(mut[0], m.u)}: over the ceiling, the build fails.`)}` : ''}${strict}</span>`;
+}
+
+/* 02 */
+function bars(id, rows, unit) {
+  const max = Math.max(...rows.map((r) => r[2]));
+  $(id).innerHTML = rows.map((r) => `<div class="bar"><span>${L(r[0], r[1])}</span><div class="t"><i style="width:${(r[2] / max) * 100}%"></i></div><b>${unit === 's' ? (r[2] / 1000).toFixed(2) + ' s' : r[2] + ' KB'}</b></div>`).join('');
+}
+function renderBreak() {
+  bars('cpu', [['Выполнение скриптов', 'Script evaluation', 1174], ['Прочее', 'Other', 625], ['Стили и раскладка', 'Style & layout', 199], ['Сборка мусора', 'Garbage collection', 110]], 's');
+  bars('bytes', [['JavaScript (7 файлов)', 'JavaScript (7 files)', 471], ['Картинки (16)', 'Images (16)', 403], ['Шрифт', 'Font', 129], ['Остальное', 'Other', 65]], 'kb');
+}
+
+/* 03 */
+const STEPS = [
+  [['Открыть магазин (navigation)', 'Open the shop (navigation)'], ['Обычный замер загрузки: LCP, CLS, TBT. INP здесь нет — никто ничего не нажимал.', 'An ordinary load measurement: LCP, CLS, TBT. No INP here: nobody pressed anything.'], 0],
+  [['Закрыть приветствие и cookie-баннер', 'Close the welcome banner and cookie notice'], ['Начало timespan: дальше Lighthouse записывает каждое действие и время до следующей отрисовки.', 'The timespan begins: from here Lighthouse records every action and the time to the next paint.'], 0],
+  [['Три раза «Add to Basket»', 'Three times "Add to Basket"'], ['Каждый клик: обработчик Angular, запрос в API, всплывающее уведомление, счётчик корзины. Под багом M11 именно здесь INP становится 665 мс.', 'Each click: an Angular handler, an API call, a snack bar, the basket counter. Under bug M11 this is where INP becomes 665 ms.'], 0],
+  [['Ввод «apple» в поиск', 'Type "apple" in search'], ['Самое медленное взаимодействие в CI: 94 мс обработки на нажатие клавиши. В сумме — INP 123 мс (медиана трёх прогонов: 107, 129, 123).', 'The slowest interaction in CI: 94 ms of processing per key press. In total: INP 123 ms (median of three runs: 107, 129, 123).'], 1],
+  [['Enter → результаты поиска', 'Enter → search results'], ['Конец timespan. Отчёт сценария публикуется на Pages вместе с отчётами страниц.', 'The timespan ends. The flow report is published on Pages next to the page reports.'], 0],
+];
+function renderSteps() {
+  $('steps').innerHTML = STEPS.map((s, i) => `<button type="button" class="step ${s[2] ? 'hot' : ''}" data-i="${i}" aria-pressed="${i === +S.step}" style="text-align:left;font:inherit;color:inherit;cursor:pointer"><b>${i + 1}</b><span>${L(...s[0])}</span>${s[2] ? '<span class="tag warn">INP</span>' : ''}</button>`).join('');
+  $('steps').onclick = (e) => { const b = e.target.closest('[data-i]'); if (!b) return; S.step = b.dataset.i; renderAll(); };
+  const s = STEPS[+S.step];
+  $('step-info').innerHTML = `<h3>${L(...s[0])}</h3><p class="muted">${L(...s[1])}</p>`;
+}
+
+/* 04 */
+function renderUrls() {
+  chips('url-chips', [['before', 'Было', 'Before'], ['after', 'Стало', 'After']], S.urls, 'urls');
+  const rows = S.urls === 'before'
+    ? [['/#/', '/'], ['/#/search?q=apple', '/'], ['/#/login', '/']]
+    : [['/?page=home#/', '/?page=home'], ['/?page=search#/search?q=apple', '/?page=search'], ['/?page=login#/login', '/?page=login']];
+  $('urls').innerHTML = rows.map((r) => `<div><span>${esc(r[0])}</span><span class="tag ${S.urls === 'before' ? 'bad' : 'ok'}">→ ${esc(r[1])}</span></div>`).join('') +
+    `<p class="muted" style="font-family:var(--font-body)">${S.urls === 'before' ? L('Одна группа из 9 прогонов: медиана логина и главной вперемешку.', 'One group of 9 runs: login and home mixed into one median.') : L('Сервер игнорирует ?page=…, Angular маршрутизирует по #. Три группы по 3 прогона.', 'The server ignores ?page=…, Angular routes by #. Three groups of 3 runs.')}</p>`;
+}
+
+const MUT = [
+  ['M11', ['Каждый клик блокирует поток на 400 мс', 'Every click blocks the thread for 400 ms'], ['сценарий: INP 665 мс, выше потолка 300', 'flow: INP 665 ms, over the 300 ceiling']],
+  ['M12', ['Синхронная задача 1.5 с при старте', 'A 1.5 s synchronous task at start-up'], ['Lighthouse CI: TBT и оценка', 'Lighthouse CI: TBT and the score']],
+  ['M13', ['Баннер через 0.8 с сдвигает страницу', 'A banner pushes the page down after 0.8 s'], ['Lighthouse CI: CLS', 'Lighthouse CI: CLS']],
+  ['M14', ['+300 KB несжимаемых данных в бандле', '+300 KB of incompressible data in the bundle'], ['размер скриптов 542 KB > 520 KB — после переноса бюджета в resource-summary', 'script size 542 KB > 520 KB, after the budget moved to resource-summary']],
+];
+function renderMut() { $('mut').innerHTML = MUT.map((m) => `<div class="r"><b>${m[0]}</b><span>${esc(L(...m[1]))}</span><span class="muted">${esc(L(...m[2]))}</span><span class="tag ok">${L('пойман', 'caught')}</span></div>`).join(''); }
+
+const TERMS = [
+  ['Core Web Vitals', ['Три метрики Google о реальном опыте: LCP (загрузка), INP (отклик), CLS (стабильность).', "Google's three metrics of real experience: LCP (loading), INP (responsiveness), CLS (stability)."]],
+  ['lab / field', ['Лаборатория — замер в контролируемых условиях (Lighthouse); поле — данные настоящих посетителей (CrUX, RUM).', 'Lab: measured in controlled conditions (Lighthouse); field: data from real visitors (CrUX, RUM).']],
+  ['simulated throttling', ['Lighthouse замеряет без замедления и вычисляет, что дали бы медленная сеть и процессор: стабильнее на общей машине.', 'Lighthouse measures unthrottled and computes what a slow network and CPU would give: steadier on a shared machine.']],
+  ['user flow', ['Сценарий Lighthouse из шагов navigation, timespan, snapshot — замеры во время действий пользователя.', 'A Lighthouse script of navigation, timespan and snapshot steps: measurements during user actions.']],
+];
+function renderTerms() { $('terms').innerHTML = TERMS.map((t) => `<div><dt>${esc(t[0])}</dt><dd>${L(...t[1])}</dd></div>`).join(''); }
+const CMDS = ['npm run perf:lhci', 'npm run perf:lhci:mobile', 'npm run perf:flow', 'node scripts/perf-summary.mjs'];
+function renderCmds() { $('cmds').innerHTML = CMDS.map((c, i) => `<div class="cmd"><code id="cmd-${i}">${esc(c)}</code><button type="button" data-c="${i}">${L('Копировать', 'Copy')}</button></div>`).join(''); }
+$('cmds').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-c]'); if (!b) return;
+  const done = () => { b.textContent = L('Скопировано', 'Copied'); setTimeout(() => (b.textContent = L('Копировать', 'Copy')), 1500); };
+  const fallback = () => { const r = document.createRange(); r.selectNodeContents($('cmd-' + b.dataset.c)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+  try { navigator.clipboard.writeText(CMDS[+b.dataset.c]).then(done, fallback); } catch (err) { fallback(); }
+});
+
+function renderAll() { renderRuler(); renderBreak(); renderSteps(); renderUrls(); renderMut(); renderTerms(); renderCmds(); }
+function setLang(l) {
+  S.lang = l; document.body.dataset.lang = l; document.documentElement.lang = l;
+  $('lang-ru').setAttribute('aria-pressed', l === 'ru');
+  $('lang-en').setAttribute('aria-pressed', l === 'en');
+  try { localStorage.setItem('perf-lang', l); } catch (e) {}
+  renderAll();
+}
+document.querySelectorAll('.seg button').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.l)));
+let start = document.documentElement.dataset.defaultLang || 'ru';
+try { start = localStorage.getItem('perf-lang') || start; } catch (e) {}
+setLang(start);
+</script>
+</body>
+</html>
