@@ -34,7 +34,7 @@ All 22, with steps and the pinning test, are in [`known-defects.md`](known-defec
 | UI-SEC-1   | critical | DOM XSS through the search term                          | open, pinned |
 | UI-A11Y-1  | major    | basket buttons without accessible names                  | open, pinned |
 | UI-A11Y-2  | major    | radio buttons in checkout tables without names           | open, pinned |
-| UI-A11Y-14 | major    | content cut off and scrolling sideways at 320 px         | open, pinned |
+| UI-A11Y-14 | WCAG AA  | content cut off and scrolling sideways at 320 px         | open, pinned |
 | UI-AUTH-1  | minor    | a guest sees an empty order history instead of the login | open, pinned |
 
 ## 4. Deviations from the plan
@@ -46,4 +46,5 @@ All 22, with steps and the pinning test, are in [`known-defects.md`](known-defec
 1. Fix UI-SEC-1 first: bind the search term as text.
 2. Name the icon buttons and checkout radios (UI-A11Y-1 and UI-A11Y-2), which unblocks checkout for screen-reader
    users.
-3. Mobile LCP: stop eagerly loading the carousel images on the start page.
+3. Mobile LCP: split the JavaScript bundle by route. 158 KB of JavaScript (44 % of `main.js`) is never used on
+   the home page.

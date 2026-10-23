@@ -40,7 +40,7 @@ ones.
 | UI-SEC-1   | critical | DOM XSS: `#/search?q=<img src=x onerror=…>` runs the script                     |
 | UI-A11Y-1  | major    | basket buttons (+, −, delete) are icons with no accessible name                 |
 | UI-A11Y-2  | major    | radio buttons in the address, delivery and card tables have no accessible name  |
-| UI-A11Y-14 | major    | at 320 px product cards are cut off and the page scrolls sideways (WCAG 1.4.10) |
+| UI-A11Y-14 | WCAG AA  | at 320 px product cards are cut off and the page scrolls sideways (WCAG 1.4.10) |
 | UI-AUTH-1  | minor    | a guest who opens `#/order-history` gets an empty page instead of the login     |
 
 Performance on mobile: LCP 5.5–6.6 s against a 2.5 s target. The desktop meets every target.
