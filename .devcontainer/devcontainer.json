@@ -1,0 +1,16 @@
+{
+  "name": "ui-e2e-testing",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "postCreateCommand": "npm ci && npx playwright install --with-deps chromium",
+  "customizations": {
+    "codespaces": {
+      "openFiles": ["README.md"]
+    }
+  },
+  "hostRequirements": {
+    "cpus": 4
+  }
+}

@@ -3,6 +3,7 @@
 [![Tests](https://github.com/NailKarimov/ui-e2e-testing/actions/workflows/tests.yml/badge.svg)](https://github.com/NailKarimov/ui-e2e-testing/actions/workflows/tests.yml)
 [![Allure report](https://img.shields.io/badge/report-Allure-orange)](https://nailkarimov.github.io/ui-e2e-testing/)
 [![Release](https://img.shields.io/github/v/release/NailKarimov/ui-e2e-testing)](https://github.com/NailKarimov/ui-e2e-testing/releases)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/NailKarimov/ui-e2e-testing?quickstart=1)
 
 ### ▶ Open online
 
@@ -61,6 +62,8 @@ ones.
 Performance on mobile: LCP 5.5–6.6 s against a 2.5 s target. The desktop meets every target.
 
 ## Running it
+
+No local setup: the **Open in GitHub Codespaces** badge starts a browser VS Code with this repository, its tools and Docker; the container runs `npm ci && npx playwright install --with-deps chromium` on creation, then `npm run shop:up && npm run test:smoke` works in the terminal.
 
 Requirements: Node.js 22+, Docker, Java 17+ for a local Allure report.
 
