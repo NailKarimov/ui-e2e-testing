@@ -44,6 +44,8 @@ in five browsers and devices. On top of that they check accessibility, visual re
 
 ## Findings
 
+Each defect is also a bug report in [Issues](https://github.com/NailKarimov/ui-e2e-testing/issues?q=is%3Aissue+label%3Abug), with steps, expected and actual results, severity and a link to the test that pins it.
+
 **22 defects** are listed in [`docs/known-defects.md`](docs/known-defects.md): 8 functional and 14 accessibility
 ones.
 
