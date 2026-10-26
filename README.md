@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/NailKarimov/ui-e2e-testing/actions/workflows/tests.yml/badge.svg)](https://github.com/NailKarimov/ui-e2e-testing/actions/workflows/tests.yml)
 [![Allure report](https://img.shields.io/badge/report-Allure-orange)](https://nailkarimov.github.io/ui-e2e-testing/)
+[![Release](https://img.shields.io/github/v/release/NailKarimov/ui-e2e-testing)](https://github.com/NailKarimov/ui-e2e-testing/releases)
 
 ### ▶ Open online
 
@@ -103,6 +104,8 @@ docs/                     test plan, test report, known defects, guides
   history on GitHub Pages;
 - the `visual` job runs the screenshot tests inside `mcr.microsoft.com/playwright` and commits new baselines.
   "Run workflow" with "approve the current screens" updates them on purpose.
+
+Releases: committing `.github/releases/<tag>.md` runs the Release workflow, which creates the tag and the GitHub release with that file as its notes.
 
 ## Documentation
 
