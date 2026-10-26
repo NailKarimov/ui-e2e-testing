@@ -56,7 +56,15 @@ jobs:
           npm run typecheck
 
       - name: Install browsers (Chromium, Firefox, WebKit)
-        run: npx playwright install --with-deps chromium firefox webkit
+        # The download has hung twice for 40 minutes (26.10.2026): cap each attempt and retry.
+        timeout-minutes: 20
+        run: |
+          for i in 1 2 3; do
+            timeout 360 npx playwright install --with-deps chromium firefox webkit && exit 0
+            echo "::warning::browser install attempt $i failed or hung, retrying"
+            sleep 15
+          done
+          exit 1
 
       - name: Wait for Juice Shop
         run: |
