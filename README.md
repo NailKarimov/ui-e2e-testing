@@ -3,6 +3,18 @@
 [![Tests](https://github.com/NailKarimov/ui-e2e-testing/actions/workflows/tests.yml/badge.svg)](https://github.com/NailKarimov/ui-e2e-testing/actions/workflows/tests.yml)
 [![Allure report](https://img.shields.io/badge/report-Allure-orange)](https://nailkarimov.github.io/ui-e2e-testing/)
 
+### ▶ Open online
+
+| Page                                                                                                 | What it is        |
+| ---------------------------------------------------------------------------------------------------- | ----------------- |
+| **[Allure test report](https://nailkarimov.github.io/ui-e2e-testing/)**                              | latest CI run     |
+| [Lighthouse reports](https://nailkarimov.github.io/ui-e2e-testing/lighthouse/)                       | latest CI run     |
+| [UI e2e](https://nailkarimov.github.io/ui-e2e-testing/ui-e2e.html)                                   | interactive guide |
+| [Accessibility and visual regression](https://nailkarimov.github.io/ui-e2e-testing/a11y-visual.html) | interactive guide |
+| [Speed budgets](https://nailkarimov.github.io/ui-e2e-testing/perf.html)                              | interactive guide |
+
+Click these links: opening an `.html` file in the file list shows its source code, GitHub does not run it.
+
 UI end-to-end tests of **[OWASP Juice Shop](https://github.com/juice-shop/juice-shop) v20.3.0**, an Angular +
 Material shop, with Playwright Test and TypeScript. They follow real user journeys, from search to order history,
 in five browsers and devices. On top of that they check accessibility, visual regression and performance budgets.
