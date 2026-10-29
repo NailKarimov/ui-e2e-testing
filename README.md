@@ -48,7 +48,7 @@ in five browsers and devices. On top of that they check accessibility, visual re
 
 Each defect is also a bug report in [Issues](https://github.com/NailKarimov/ui-e2e-testing/issues?q=is%3Aissue+label%3Abug), with steps, expected and actual results, severity and a link to the test that pins it.
 
-**22 defects** are listed in [`docs/known-defects.md`](docs/known-defects.md): 8 functional and 14 accessibility
+**20 defects** are listed in [`docs/known-defects.md`](docs/known-defects.md): 6 functional and 14 accessibility
 ones.
 
 | ID         | Severity | Summary                                                                         |
@@ -116,7 +116,7 @@ Releases: committing `.github/releases/<tag>.md` runs the Release workflow, whic
 | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | [`docs/test-plan.md`](docs/test-plan.md)                                                                                                     | test plan (ISO/IEC/IEEE 29119-3)                                                       |
 | [`docs/test-report.md`](docs/test-report.md)                                                                                                 | test summary report: latest results, defects, recommendations                          |
-| [`docs/known-defects.md`](docs/known-defects.md)                                                                                             | all 22 defects with steps, expected and actual results, and the pinning test           |
+| [`docs/known-defects.md`](docs/known-defects.md)                                                                                             | all 20 defects with steps, expected and actual results, and the pinning test           |
 | [`docs/ui-e2e.md`](docs/ui-e2e.md) · [visual](https://nailkarimov.github.io/ui-e2e-testing/ui-e2e.html)                                      | the locator ladder, login without the form, phones, flaky tests, planted bugs          |
 | [`docs/a11y.md`](docs/a11y.md), [`docs/visual.md`](docs/visual.md) · [visual](https://nailkarimov.github.io/ui-e2e-testing/a11y-visual.html) | axe with a ratchet, Pa11y, keyboard, reflow; screenshot tolerances and baselines in CI |
 | [`docs/lighthouse.md`](docs/lighthouse.md) · [visual](https://nailkarimov.github.io/ui-e2e-testing/perf.html)                                | Lighthouse CI: targets and ceilings, budgets, INP through a user flow                  |

@@ -18,7 +18,7 @@ performance meets every target, while mobile LCP is about 2.5 times the target.
 | ------------------------------- | ------------------------------------------------ |
 | Tests run                       | 217                                              |
 | Passed / failed / skipped       | 216 / 0 / 1                                      |
-| Expected failures (`test.fail`) | 8 functional defects                             |
+| Expected failures (`test.fail`) | 8 defects (6 functional, 2 accessibility)        |
 | Visual                          | 12 screenshots within tolerance                  |
 | Lighthouse, desktop             | LCP 1.2 s, TBT 14–23 ms, CLS ≤ 0.073, INP 123 ms |
 | Lighthouse, mobile              | LCP 5.5–6.6 s, TBT 182–310 ms, CLS ≤ 0.065       |
@@ -27,7 +27,7 @@ performance meets every target, while mobile LCP is about 2.5 times the target.
 
 ## 3. Defects
 
-All 22, with steps and the pinning test, are in [`known-defects.md`](known-defects.md). The most important ones:
+All 20, with steps and the pinning test, are in [`known-defects.md`](known-defects.md). The most important ones:
 
 | ID         | Severity | Summary                                                  | Status       |
 | ---------- | -------- | -------------------------------------------------------- | ------------ |
