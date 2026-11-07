@@ -2,51 +2,51 @@
  "target": 200,
  "ceiling": 300,
  "median": {
-  "run": 1,
-  "inp": 101.837,
-  "tbt": 30.144000000000233,
+  "run": 3,
+  "inp": 141.537,
+  "tbt": 81.70000000000027,
   "cls": 0.06275879153935991,
   "parts": [
    "Input delay 1 ms",
-   "Processing duration 73 ms",
-   "Presentation delay 28 ms"
+   "Processing duration 111 ms",
+   "Presentation delay 30 ms"
   ],
   "node": "div.search-area > app-mat-search-bar#searchQuery > div.search-container > input.ng-untouched"
  },
  "runs": [
   {
    "run": 1,
-   "inp": 101.837,
-   "tbt": 30.144000000000233,
+   "inp": 147.079,
+   "tbt": 86.22000000000025,
    "cls": 0.06275879153935991,
    "parts": [
-    "Input delay 1 ms",
-    "Processing duration 73 ms",
-    "Presentation delay 28 ms"
+    "Input delay 0 ms",
+    "Processing duration 111 ms",
+    "Presentation delay 36 ms"
    ],
    "node": "div.search-area > app-mat-search-bar#searchQuery > div.search-container > input.ng-untouched"
   },
   {
    "run": 2,
-   "inp": 95.049,
-   "tbt": 23.58999999999969,
+   "inp": 121.676,
+   "tbt": 59.947000000000116,
    "cls": 0.06275879153935991,
    "parts": [
     "Input delay 0 ms",
-    "Processing duration 72 ms",
-    "Presentation delay 23 ms"
+    "Processing duration 91 ms",
+    "Presentation delay 30 ms"
    ],
    "node": "div.search-area > app-mat-search-bar#searchQuery > div.search-container > input.ng-untouched"
   },
   {
    "run": 3,
-   "inp": 102.245,
-   "tbt": 29.98199999999997,
+   "inp": 141.537,
+   "tbt": 81.70000000000027,
    "cls": 0.06275879153935991,
    "parts": [
     "Input delay 1 ms",
-    "Processing duration 79 ms",
-    "Presentation delay 23 ms"
+    "Processing duration 111 ms",
+    "Presentation delay 30 ms"
    ],
    "node": "div.search-area > app-mat-search-bar#searchQuery > div.search-container > input.ng-untouched"
   }
