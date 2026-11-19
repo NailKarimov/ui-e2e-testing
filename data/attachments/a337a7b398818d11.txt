@@ -1,0 +1,6 @@
+1. <button> "Open Sidenav" ✓
+2. <button> "Back to homepage" ✓
+3. <button> "Open search" ✓
+4. <button> "Show/hide account menu" ✓
+5. <button> "Show the shopping cart" ✓
+6. <button> "Language selection menu" ✓
